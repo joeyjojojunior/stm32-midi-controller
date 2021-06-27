@@ -1,0 +1,13 @@
+main.c:101:5:main	24	static
+main.c:263:6:SystemClock_Config	112	static
+main.c:312:13:MX_ADC1_Init	24	static
+main.c:380:13:MX_I2C1_Init	8	static
+main.c:412:13:MX_RTC_Init	8	static
+main.c:444:13:MX_SDIO_SD_Init	8	static
+main.c:472:13:MX_DMA_Init	16	static
+main.c:489:13:MX_GPIO_Init	24	static
+main.c:499:6:dmux_select	24	static
+main.c:525:6:i2c_select	32	static
+main.c:533:6:HAL_ADC_ConvHalfCpltCallback	16	static
+main.c:545:6:HAL_ADC_ConvCpltCallback	16	static
+main.c:562:6:Error_Handler	4	static,ignoring_inline_asm

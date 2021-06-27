@@ -1,0 +1,15 @@
+usbd_midi.c:206:17:USBD_Midi_Init	24	static
+usbd_midi.c:244:6:writeMidi	40	static
+usbd_midi.c:300:17:USBD_Midi_DeInit	16	static
+usbd_midi.c:317:17:USBD_Midi_Setup	16	static
+usbd_midi.c:352:18:USBD_Midi_GetCfgDesc	16	static
+usbd_midi.c:364:11:USBD_Midi_DeviceQualifierDescriptor	16	static
+usbd_midi.c:378:17:USBD_Midi_DataIn	16	static
+usbd_midi.c:391:17:USBD_Midi_EP0_RxReady	16	static
+usbd_midi.c:402:17:USBD_Midi_EP0_TxReady	16	static
+usbd_midi.c:413:17:USBD_Midi_SOF	16	static
+usbd_midi.c:425:17:USBD_Midi_IsoINIncomplete	16	static
+usbd_midi.c:437:17:USBD_Midi_IsoOutIncomplete	16	static
+usbd_midi.c:449:17:USBD_Midi_DataOut	32	static
+usbd_midi.c:498:11:USBD_Midi_GetDeviceQualifierDesc	16	static
+usbd_midi.c:512:10:USBD_Midi_RegisterInterface	24	static
