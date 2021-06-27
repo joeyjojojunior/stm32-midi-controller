@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ssd1306.h"
+#include "knob.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
@@ -50,29 +51,15 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
-
 I2C_HandleTypeDef hi2c1;
-
 RTC_HandleTypeDef hrtc;
-
 SD_HandleTypeDef hsd;
 
 /* USER CODE BEGIN PV */
 uint16_t adcBuf[NUM_ADC_CHANNELS * NUM_ADC_SAMPLES] = { 0 };
 uint16_t adcFiltered[4] = { 0 };
-uint16_t adcFilteredPrev[4] = { 0 };
-
-uint32_t midiValues[4];
-uint32_t midiValuesPrev[4];
 double slope = 1.0 * 127 / 249;
 float EMA_A_M = 0.6;
-
-char topLineStrings[4][32] = { "120     >>     ", "023    <<<     ", "023      <     ", "023            " };
-char labelStrings[4][32] = { "Cutoff", "Resonance", "Osc 1", "Env 1 Decay" };
-char labelStrings2[4][32] = { "Filter 1", "Filter 1", "SAW", "Velocity" };
-
-char adcStrings[4][4];
-char midiStrings[4][4];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -139,33 +126,15 @@ int main(void) {
 	//MX_SDIO_SD_Init();
 
 	/* USER CODE BEGIN 2 */
-	i2c_select(I2C_MUX_MASTER, 0);
-	i2c_select(I2C_MUX_SLAVE, 0);
-	ssd1306_Init(&hi2c1, I2C_OLED_ADDR);
-	HAL_Delay(1000);
-	ssd1306_Fill(Black);
-	ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
+	// Init displays
+	for (int i = 0; i < 4; i++) {
+		dmux_select(knobs[i].row, knobs[i].col);
+		ssd1306_Init(&hi2c1, I2C_OLED_ADDR);
+		HAL_Delay(1000);
+		ssd1306_Fill(Black);
+		ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
+	}
 
-	i2c_select(I2C_MUX_MASTER, 0);
-	i2c_select(I2C_MUX_SLAVE, 1);
-	ssd1306_Init(&hi2c1, I2C_OLED_ADDR);
-	HAL_Delay(1000);
-	ssd1306_Fill(Black);
-	ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-
-	i2c_select(I2C_MUX_MASTER, 1);
-	i2c_select(I2C_MUX_SLAVE, 0);
-	ssd1306_Init(&hi2c1, I2C_OLED_ADDR);
-	HAL_Delay(1000);
-	ssd1306_Fill(Black);
-	ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-
-	i2c_select(I2C_MUX_MASTER, 1);
-	i2c_select(I2C_MUX_SLAVE, 1);
-	ssd1306_Init(&hi2c1, I2C_OLED_ADDR);
-	HAL_Delay(1000);
-	ssd1306_Fill(Black);
-	ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -173,39 +142,20 @@ int main(void) {
 	HAL_ADC_Start(&hadc1);
 	while (1) {
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcBuf, NUM_ADC_CHANNELS * NUM_ADC_SAMPLES);
+
 		for (int i = 0; i < 4; i++) {
-			adcFilteredPrev[i] = adcFiltered[i];
-			midiValuesPrev[i] = midiValues[i];
+			uint8_t last_MIDI_val = 0;
+			uint8_t curr_MIDI_val = 0;
+
 			adcFiltered[i] = ADC_DMA_average(i);
-			midiValues[i] = MIN((EMA_A_M * slope * adcFiltered[i]) + ((1 - EMA_A_M) * midiValues[i]), 127);
-			if (midiValuesPrev[i] != midiValues[i]) {
-				sprintf(adcStrings[i], "%.3d", (int) adcFiltered[i]);
-				sprintf(midiStrings[i], "%.3d", (int) midiValues[i]);
-				dmux_select(i);
-				ssd1306_Fill(Black);
+			last_MIDI_val = knobs[i].value;
+			curr_MIDI_val = MIN((EMA_A_M * slope * adcFiltered[i]) + ((1 - EMA_A_M) * knobs[i].value), 127);
 
-				// Draw top line
-				ssd1306_SetCursor(0, 0);
-				ssd1306_WriteString(topLineStrings[i], Font_7x10, White);
-				ssd1306_SetCursor(105, 0);
-				ssd1306_WriteString(midiStrings[i], Font_7x10, White);
-
-				// Draw first label
-				uint8_t x = ((14 - strlen(labelStrings[i])) / 2) * 9;
-				if (strlen(labelStrings[i]) % 2 != 0) x += 5;
-				ssd1306_SetCursor(x, 16);
-				ssd1306_WriteString(labelStrings[i], Font_9x18, White);
-
-				// Draw second label
-				x = ((14 - strlen(labelStrings2[i])) / 2) * 9;
-				if (strlen(labelStrings2[i]) % 2 != 0) x += 5;
-				ssd1306_SetCursor(x, 40);
-				ssd1306_WriteString(labelStrings2[i], Font_9x18, White);
-
-				//ssd1306_SetCursor(0, 36);
-				//ssd1306_WriteString(adcStrings[i], Font_11x18, White);
+			if (curr_MIDI_val != last_MIDI_val) {
+				knobs[i].value = curr_MIDI_val;
+				dmux_select(knobs[i].row, knobs[i].col);
+				ssd1306_WriteKnob(knobs[i]);
 				ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-				MX_USB_Send_Midi((uint8_t) midiValues[i], i + 17);
 			}
 		}
 		/* USER CODE END WHILE */
@@ -455,29 +405,45 @@ static void MX_GPIO_Init(void) {
 
 }
 
-void dmux_select(uint8_t n) {
+void dmux_select(uint8_t row, uint8_t col) {
 	uint8_t master_mux_i;
 	uint8_t slave_mux_i;
-	switch (n) {
-	case 0:
-		master_mux_i = 0;
-		slave_mux_i = 0;
-		break;
-	case 1:
-		master_mux_i = 0;
-		slave_mux_i = 1;
-		break;
-	case 2:
-		master_mux_i = 1;
-		slave_mux_i = 0;
-		break;
-	case 3:
-		master_mux_i = 1;
-		slave_mux_i = 1;
-		break;
-	}
-	i2c_select(I2C_MUX_MASTER, master_mux_i);
-	i2c_select(I2C_MUX_SLAVE, slave_mux_i);
+	/*
+	 if (row == 0 && col == 0) {
+	 master_mux_i = 0;
+	 slave_mux_i = 0;
+	 } else if (row == 0 && col == 1) {
+	 master_mux_i = 0;
+	 slave_mux_i = 1;
+	 } else if (row == 1 && col == 0) {
+	 master_mux_i = 1;
+	 slave_mux_i = 0;
+	 } else if (row == 1 && col == 1) {
+	 master_mux_i = 1;
+	 slave_mux_i = 1;
+	 }
+
+	 switch (n) {
+	 case 0:
+	 master_mux_i = 0;
+	 slave_mux_i = 0;
+	 break;
+	 case 1:
+	 master_mux_i = 0;
+	 slave_mux_i = 1;
+	 break;
+	 case 2:
+	 master_mux_i = 1;
+	 slave_mux_i = 0;
+	 break;
+	 case 3:
+	 master_mux_i = 1;
+	 slave_mux_i = 1;
+	 break;
+	 }
+	 */
+	i2c_select(I2C_MUX_MASTER, row);
+	i2c_select(I2C_MUX_SLAVE, col);
 }
 
 /* USER CODE BEGIN 4 */
