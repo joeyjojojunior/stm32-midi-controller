@@ -39,7 +39,8 @@
 #define I2C_MUX_MASTER 0x71 << 1
 #define I2C_MUX_SLAVE 0x70 << 1
 #define I2C_OLED_ADDR 0x78
-#define AVERAGE_NUM 4
+#define NUM_ADC_SAMPLES 32
+#define NUM_ADC_CHANNELS 4
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,18 +58,19 @@ RTC_HandleTypeDef hrtc;
 SD_HandleTypeDef hsd;
 
 /* USER CODE BEGIN PV */
-bool isDMADone = false;
+uint8_t is_DMA_done = 0;
+uint8_t processing_data = 0;
 
-uint16_t adcBuf[4];
-uint16_t adcFiltered[4];
-uint16_t adcFilteredPrev[4];
+uint16_t adcBuf[NUM_ADC_CHANNELS * NUM_ADC_SAMPLES] = { 0 };
+uint16_t adcFiltered[4] = { 0 };
+uint16_t adcFilteredPrev[4] = { 0 };
 float EMA_A = 1;
 
 uint32_t midiValues[4];
 uint32_t midiValuesPrev[4];
 double slope = 1.0 * 127 / 249;
-//double slope = 1.0 * 127 / 4090;
-float EMA_A_M = 0.3;
+//double slope = 1.0 * 127 / 1024;
+float EMA_A_M = 0.6;
 
 char labelStrings[4][32] = { "Cutoff", "Resonance", "Filt Env", "Env Decay" };
 char adcStrings[4][4];
@@ -94,7 +96,19 @@ void i2c_select(uint8_t mux_addr, uint8_t i);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint16_t ADC_DMA_average(int channel) {
+	uint32_t adc_sum;
+	int i;
 
+	adc_sum = 0;
+	if (channel < NUM_ADC_CHANNELS) {
+		for (i = 0; i < NUM_ADC_SAMPLES; i++)
+			adc_sum += adcBuf[channel + i * NUM_ADC_CHANNELS];
+	} else
+		return 1;
+
+	return adc_sum / NUM_ADC_SAMPLES;
+}
 /* USER CODE END 0 */
 
 /**
@@ -165,32 +179,31 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 	HAL_ADC_Start(&hadc1);
 	while (1) {
-		HAL_ADC_Start_DMA(&hadc1, adcBuf, 4);
-
-		//if (isDMADone) {
-			for (int i = 0; i < 4; i++) {
-				adcFilteredPrev[i] = adcFiltered[i];
-				midiValuesPrev[i] = midiValues[i];
-				//adcFiltered[i] = (EMA_A * adcBuf[i]) + ((1 - EMA_A) * adcFiltered[i]);
-				adcFiltered[i] = adcBuf[i];
-				midiValues[i] = MIN((EMA_A_M * slope * adcFiltered[i]) + ((1 - EMA_A_M) * midiValues[i]), 127);
-				if (midiValuesPrev[i] != midiValues[i]) {
-					sprintf(adcStrings[i], "%.3d", (int) adcFiltered[i]);
-					sprintf(midiStrings[i], "%.3d", (int) midiValues[i]);
-					dmux_select(i);
-					ssd1306_Fill(Black);
-					ssd1306_SetCursor(0, 0);
-					//ssd1306_WriteString(labelStrings[i], Font_11x18, White);
-					ssd1306_WriteString(midiStrings[i], Font_11x18, White);
-					ssd1306_SetCursor(0, 36);
-					ssd1306_WriteString(adcStrings[i], Font_11x18, White);
-					ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-					MX_USB_Send_Midi((uint8_t) midiValues[i], i + 17);
-					//HAL_Delay(1);
-				}
+		//if (!processing_data) HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcBuf, NUM_ADC_CHANNELS * NUM_ADC_SAMPLES);
+		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcBuf, NUM_ADC_CHANNELS * NUM_ADC_SAMPLES);
+		for (int i = 0; i < 4; i++) {
+			processing_data = 1;
+			adcFilteredPrev[i] = adcFiltered[i];
+			midiValuesPrev[i] = midiValues[i];
+			//adcFiltered[i] = (EMA_A * adcBuf[i]) + ((1 - EMA_A) * adcFiltered[i]);
+			adcFiltered[i] = ADC_DMA_average(i);
+			midiValues[i] = MIN((EMA_A_M * slope * adcFiltered[i]) + ((1 - EMA_A_M) * midiValues[i]), 127);
+			if (midiValuesPrev[i] != midiValues[i]) {
+				sprintf(adcStrings[i], "%.3d", (int) adcFiltered[i]);
+				sprintf(midiStrings[i], "%.3d", (int) midiValues[i]);
+				dmux_select(i);
+				ssd1306_Fill(Black);
+				ssd1306_SetCursor(0, 0);
+				//ssd1306_WriteString(labelStrings[i], Font_11x18, White);
+				ssd1306_WriteString(midiStrings[i], Font_11x18, White);
+				ssd1306_SetCursor(0, 36);
+				ssd1306_WriteString(adcStrings[i], Font_11x18, White);
+				ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
+				MX_USB_Send_Midi((uint8_t) midiValues[i], i + 17);
+				//HAL_Delay(1);
 			}
-			isDMADone = false;
-		//}
+		}
+		processing_data = 0;
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
