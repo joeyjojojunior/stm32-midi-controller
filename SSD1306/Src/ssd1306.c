@@ -141,17 +141,25 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob k) {
 
 	// Draw main label
 	len_label = strlen(k.label);
-	x = ((14 - len_label) / 2) * 9;
+	x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_9x18.FontWidth;
 	if (len_label % 2 != 0) x += 5;
 	ssd1306_SetCursor(x, 16);
 	ssd1306_WriteString(k.label, Font_9x18, White);
 
-	// Draw sub label(s)
-	len_label = strlen(k.sub_label);
-	x = ((14 - len_label) / 2) * 9;
-	if (len_label % 2 != 0) x += 5;
-	ssd1306_SetCursor(x, 40);
-	ssd1306_WriteString(k.sub_label, Font_9x18, White);
+	if (k.max_values < 127) {
+		len_label = strlen(k.sub_labels[k.value]);
+		x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_9x18.FontWidth;
+		if (len_label % 2 != 0) x += 5;
+		ssd1306_SetCursor(x, 40);
+		ssd1306_WriteString(k.sub_labels[k.value], Font_9x18, White);
+	} else {
+		// Draw sub label(s)
+		len_label = strlen(k.sub_label);
+		x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_9x18.FontWidth;
+		if (len_label % 2 != 0) x += 5;
+		ssd1306_SetCursor(x, 40);
+		ssd1306_WriteString(k.sub_label, Font_9x18, White);
+	}
 
 	ssd1306_UpdateScreen(hi2c);
 }

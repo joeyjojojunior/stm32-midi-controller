@@ -38,8 +38,8 @@
 #define I2C_MUX_SLAVE_ADDR 0x70 << 1
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
-#define EMA_A 0.6
-#define UPPER_BOUND_ADC 249
+#define EMA_A 0.7
+#define UPPER_BOUND_ADC 253
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -144,6 +144,11 @@ int main(void) {
 		HAL_Delay(100);
 	}
 
+	knobs[3].sub_labels = malloc(sizeof(*knobs[3].sub_labels) * (knobs[3].max_values));
+	strncpy(knobs[3].sub_labels[0], "Triangle", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[1], "Saw", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[2], "Pulse", MAX_LABEL_CHARS);
+
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -157,7 +162,8 @@ int main(void) {
 			uint8_t curr_MIDI_val = 0;
 
 			adcAveraged[i] = ADC_DMA_average(i);
-			float midi_scale_factor = 1.0 * knobs[i].max_value / UPPER_BOUND_ADC;
+			float midi_scale_factor = 1.0 * (knobs[i].max_values) / UPPER_BOUND_ADC;
+
 			last_MIDI_val = knobs[i].value;
 			curr_MIDI_val = MIN((EMA_A * midi_scale_factor * adcAveraged[i]) + ((1 - EMA_A) * knobs[i].value), 127);
 
@@ -172,6 +178,8 @@ int main(void) {
 
 		/* USER CODE BEGIN 3 */
 	}
+
+	free(knobs[3].sub_labels);
 	/* USER CODE END 3 */
 }
 
