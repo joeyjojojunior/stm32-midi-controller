@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "ssd1306.h"
 #include <stdio.h>
+#include <stdbool.h>
 #include <math.h>
 /* USER CODE END Includes */
 
@@ -43,7 +44,6 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define MIN(a,b) (((a)<(b))?(a):(b))
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -57,19 +57,22 @@ RTC_HandleTypeDef hrtc;
 SD_HandleTypeDef hsd;
 
 /* USER CODE BEGIN PV */
-uint8_t convCount = AVERAGE_NUM;
+bool isDMADone = false;
 
 uint16_t adcBuf[4];
 uint16_t adcFiltered[4];
-float EMA_A = 0.8;
+uint16_t adcFilteredPrev[4];
+float EMA_A = 1;
 
 uint32_t midiValues[4];
 uint32_t midiValuesPrev[4];
-double slope = 1.0 * 127 / 250;
-float EMA_A_M = 1;
+double slope = 1.0 * 127 / 249;
+//double slope = 1.0 * 127 / 4090;
+float EMA_A_M = 0.3;
 
-char labelStrings[4][32] = {"Cutoff", "Resonance", "Filt Env", "Env Decay"};
+char labelStrings[4][32] = { "Cutoff", "Resonance", "Filt Env", "Env Decay" };
 char adcStrings[4][4];
+char midiStrings[4][4];
 
 char adcStr1[4];
 char adcStr2[4];
@@ -164,91 +167,30 @@ int main(void) {
 	while (1) {
 		HAL_ADC_Start_DMA(&hadc1, adcBuf, 4);
 
-		for (int i = 0; i < 4; i++) {
-			midiValuesPrev[i] = midiValues[i];
-			adcFiltered[i] = (EMA_A * adcBuf[i]) + ((1 - EMA_A) * adcFiltered[i]);
-			midiValues[i] = MIN((EMA_A_M * slope * adcFiltered[i])
-					+ ((1 - EMA_A_M) * midiValues[i]), 127);
-			//midiValues[i] = (EMA_A_M * slope * adcFiltered[i]) + ((1 - EMA_A_M) * midiValues[i]);
-		}
-
-		for (int i = 0; i < 4; i++) {
-			if (midiValuesPrev[i] != midiValues[i]) {
-				sprintf(adcStrings[i], "%.3d", (int) adcFiltered[i]);
-				dmux_select(i);
-				ssd1306_Fill(Black);
-				ssd1306_SetCursor(0, 0);
-				ssd1306_WriteString(labelStrings[i], Font_11x18, White);
-				ssd1306_SetCursor(0, 36);
-				ssd1306_WriteString(adcStrings[i], Font_11x18, White);
-				ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-				MX_USB_Send_Midi((uint8_t) midiValues[i], i+17);
-				//HAL_Delay(1);
-
+		//if (isDMADone) {
+			for (int i = 0; i < 4; i++) {
+				adcFilteredPrev[i] = adcFiltered[i];
+				midiValuesPrev[i] = midiValues[i];
+				//adcFiltered[i] = (EMA_A * adcBuf[i]) + ((1 - EMA_A) * adcFiltered[i]);
+				adcFiltered[i] = adcBuf[i];
+				midiValues[i] = MIN((EMA_A_M * slope * adcFiltered[i]) + ((1 - EMA_A_M) * midiValues[i]), 127);
+				if (midiValuesPrev[i] != midiValues[i]) {
+					sprintf(adcStrings[i], "%.3d", (int) adcFiltered[i]);
+					sprintf(midiStrings[i], "%.3d", (int) midiValues[i]);
+					dmux_select(i);
+					ssd1306_Fill(Black);
+					ssd1306_SetCursor(0, 0);
+					//ssd1306_WriteString(labelStrings[i], Font_11x18, White);
+					ssd1306_WriteString(midiStrings[i], Font_11x18, White);
+					ssd1306_SetCursor(0, 36);
+					ssd1306_WriteString(adcStrings[i], Font_11x18, White);
+					ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
+					MX_USB_Send_Midi((uint8_t) midiValues[i], i + 17);
+					//HAL_Delay(1);
+				}
 			}
-		}
-		/*
-		sprintf(adcStr1, "%.3d", (int) midiValues[0]);
-		sprintf(adcStr2, "%.3d", (int) midiValues[1]);
-		sprintf(adcStr3, "%.3d", (int) midiValues[2]);
-		sprintf(adcStr4, "%.3d", (int) midiValues[3]);
-
-		//g_MIDIValue = slope * (EMA_S);
-		//EMA_S_M = (EMA_A_M * g_MIDIValue) + ((1 - EMA_A_M) * EMA_S_M);
-		//MX_USB_Send_Midi((uint8_t) EMA_S_M);
-
-		if (midiValuesPrev[0] != midiValues[0]) {
-			i2c_select(I2C_MUX_MASTER, 0);
-			i2c_select(I2C_MUX_SLAVE, 0);
-			ssd1306_Fill(Black);
-			ssd1306_SetCursor(0, 0);
-			ssd1306_WriteString("Cutoff", Font_7x10, White);
-			ssd1306_SetCursor((128 - strlen(adcStr1) * 11) / 2, 36);
-			ssd1306_WriteString(adcStr1, Font_11x18, White);
-			ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-			MX_USB_Send_Midi((uint8_t) midiValues[0], 17);
-			HAL_Delay(1);
-		}
-
-		if (midiValuesPrev[1] != midiValues[1]) {
-			i2c_select(I2C_MUX_MASTER, 0);
-			i2c_select(I2C_MUX_SLAVE, 1);
-			ssd1306_Fill(Black);
-			ssd1306_SetCursor(0, 0);
-			ssd1306_WriteString("Resonance", Font_7x10, White);
-			ssd1306_SetCursor((128 - strlen(adcStr2) * 11) / 2, 36);
-			ssd1306_WriteString(adcStr2, Font_11x18, White);
-			ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-			MX_USB_Send_Midi((uint8_t) midiValues[1], 18);
-			HAL_Delay(1);
-		}
-
-		if (midiValuesPrev[2] != midiValues[2]) {
-			i2c_select(I2C_MUX_MASTER, 1);
-			i2c_select(I2C_MUX_SLAVE, 0);
-			ssd1306_Fill(Black);
-			ssd1306_SetCursor(0, 0);
-			ssd1306_WriteString("Filt Env", Font_7x10, White);
-			ssd1306_SetCursor((128 - strlen(adcStr3) * 11) / 2, 36);
-			ssd1306_WriteString(adcStr3, Font_11x18, White);
-			ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-			MX_USB_Send_Midi((uint8_t) midiValues[2], 19);
-			HAL_Delay(1);
-		}
-
-		if (midiValuesPrev[3] != midiValues[3]) {
-			i2c_select(I2C_MUX_MASTER, 1);
-			i2c_select(I2C_MUX_SLAVE, 1);
-			ssd1306_Fill(Black);
-			ssd1306_SetCursor(0, 0);
-			ssd1306_WriteString("Env Decay", Font_7x10, White);
-			ssd1306_SetCursor((128 - strlen(adcStr4) * 11) / 2, 36);
-			ssd1306_WriteString(adcStr4, Font_11x18, White);
-			ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-			MX_USB_Send_Midi((uint8_t) midiValues[3], 20);
-			HAL_Delay(1);
-		}
-		*/
+			isDMADone = false;
+		//}
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -323,7 +265,7 @@ static void MX_ADC1_Init(void) {
 	/** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
 	 */
 	hadc1.Instance = ADC1;
-	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
 	hadc1.Init.Resolution = ADC_RESOLUTION_8B;
 	hadc1.Init.ScanConvMode = ENABLE;
 	hadc1.Init.ContinuousConvMode = ENABLE;
@@ -341,7 +283,7 @@ static void MX_ADC1_Init(void) {
 	 */
 	sConfig.Channel = ADC_CHANNEL_0;
 	sConfig.Rank = 1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+	sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
 		Error_Handler();
 	}
@@ -531,27 +473,11 @@ void i2c_select(uint8_t mux_addr, uint8_t i) {
 
 // Called when first half of buffer is filled
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
-	/*
-	 i2c_select(I2C_MUX_MASTER, 1);
-	 i2c_select(I2C_MUX_SLAVE, 0);
-	 ssd1306_SetCursor((128 - 4 * 11) / 2, 0);
-	 ssd1306_WriteString("Half Callback", Font_11x18, White);
-	 ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-	 ssd1306_Fill(Black);
-	 */
 }
 
 // Called when buffer is completely filled
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	HAL_ADC_Stop_DMA(hadc);
-	/*
-	 i2c_select(I2C_MUX_MASTER, 1);
-	 i2c_select(I2C_MUX_SLAVE, 1);
-	 ssd1306_SetCursor((128 - 4 * 11) / 2, 0);
-	 ssd1306_WriteString("Full Callback", Font_11x18, White);
-	 ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
-	 ssd1306_Fill(Black);
-	 */
 }
 /* USER CODE END 4 */
 
