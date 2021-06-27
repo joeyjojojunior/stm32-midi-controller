@@ -19,10 +19,10 @@ typedef struct Knob {
 } Knob;
 
 static Knob knobs[4] = {
-		{ .row = 0, .col = 0, .label = "Cutoff", .sub_label = "Filter 1", .channel = 1, .cc = 17, .value = 0, .max_value = 127 },
+		{ .row = 0, .col = 0, .label = "Cutoff", .sub_label = "Filter 1", .channel = 0, .cc = 17, .value = 0, .max_value = 127 },
 		{ .row = 0, .col = 1, .label = "Resonance", .sub_label = "Filter 2", .channel = 1, .cc = 18, .value = 0, .max_value = 127 },
-		{ .row = 1, .col = 0, .label = "Osc 1", .sub_label = "SAW", .channel = 1, .cc = 19, .value = 0, .max_value = 127 },
-		{ .row = 1, .col = 1, .label = "Env 1 Decay", .sub_label = "Velocity", .channel = 1, .cc = 20, .value = 0, .max_value = 127 }
+		{ .row = 1, .col = 0, .label = "Osc 1", .sub_label = "SAW", .channel = 2, .cc = 19, .value = 0, .max_value = 127 },
+		{ .row = 1, .col = 1, .label = "Env 1 Decay", .sub_label = "Velocity", .channel = 3, .cc = 20, .value = 0, .max_value = 5 }
 };
 
 #endif /* INC_KNOB_H_ */

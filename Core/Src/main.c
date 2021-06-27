@@ -26,22 +26,20 @@
 #include "ssd1306.h"
 #include "knob.h"
 #include <stdio.h>
-#include <stdbool.h>
-#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define I2C_MUX_MASTER 0x71 << 1
-#define I2C_MUX_SLAVE 0x70 << 1
-
+#define I2C_MUX_MASTER_ADDR 0x71 << 1
+#define I2C_MUX_SLAVE_ADDR 0x70 << 1
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
+#define EMA_A 0.6
+#define UPPER_BOUND_ADC 249
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,9 +55,7 @@ SD_HandleTypeDef hsd;
 
 /* USER CODE BEGIN PV */
 uint16_t adcBuf[NUM_ADC_CHANNELS * NUM_ADC_SAMPLES] = { 0 };
-uint16_t adcFiltered[4] = { 0 };
-double slope = 1.0 * 127 / 249;
-float EMA_A_M = 0.6;
+uint16_t adcAveraged[4] = { 0 };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,7 +66,9 @@ static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
+
 /* USER CODE BEGIN PFP */
+uint16_t ADC_DMA_average(int channel);
 void i2c_select(uint8_t mux_addr, uint8_t i);
 void dmux_select(uint8_t row, uint8_t col);
 /* USER CODE END PFP */
@@ -92,8 +90,8 @@ uint16_t ADC_DMA_average(int channel) {
 }
 
 void dmux_select(uint8_t row, uint8_t col) {
-	i2c_select(I2C_MUX_MASTER, row);
-	i2c_select(I2C_MUX_SLAVE, col);
+	i2c_select(I2C_MUX_MASTER_ADDR, row);
+	i2c_select(I2C_MUX_SLAVE_ADDR, col);
 }
 
 void i2c_select(uint8_t mux_addr, uint8_t i) {
@@ -143,9 +141,7 @@ int main(void) {
 	for (int i = 0; i < 4; i++) {
 		dmux_select(knobs[i].row, knobs[i].col);
 		ssd1306_Init(&hi2c1);
-		HAL_Delay(1000);
-		//ssd1306_Fill(Black);
-		//ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
+		HAL_Delay(100);
 	}
 
 	/* USER CODE END 2 */
@@ -160,14 +156,16 @@ int main(void) {
 			uint8_t last_MIDI_val = 0;
 			uint8_t curr_MIDI_val = 0;
 
-			adcFiltered[i] = ADC_DMA_average(i);
+			adcAveraged[i] = ADC_DMA_average(i);
+			float midi_scale_factor = 1.0 * knobs[i].max_value / UPPER_BOUND_ADC;
 			last_MIDI_val = knobs[i].value;
-			curr_MIDI_val = MIN((EMA_A_M * slope * adcFiltered[i]) + ((1 - EMA_A_M) * knobs[i].value), 127);
+			curr_MIDI_val = MIN((EMA_A * midi_scale_factor * adcAveraged[i]) + ((1 - EMA_A) * knobs[i].value), 127);
 
 			if (curr_MIDI_val != last_MIDI_val) {
 				knobs[i].value = curr_MIDI_val;
 				dmux_select(knobs[i].row, knobs[i].col);
 				ssd1306_WriteKnob(&hi2c1, knobs[i]);
+				MX_USB_Send_Midi(knobs[i].channel, knobs[i].cc, knobs[i].value);
 			}
 		}
 		/* USER CODE END WHILE */

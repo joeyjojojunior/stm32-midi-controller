@@ -103,13 +103,10 @@ void ssd1306_Fill(SSD1306_COLOR color)
 //
 void ssd1306_UpdateScreen(I2C_HandleTypeDef *hi2c)
 {
-    uint8_t i;
-
-    for (i = 0; i < 8; i++) {
+    for (uint8_t i = 0; i < 8; i++) {
         ssd1306_WriteCommand(hi2c, 0xB0 + i);
         ssd1306_WriteCommand(hi2c, 0x00);
         ssd1306_WriteCommand(hi2c, 0x10);
-
         HAL_I2C_Mem_Write(hi2c, SSD1306_I2C_ADDR, 0x40, 1, &SSD1306_Buffer[SSD1306_WIDTH * i], SSD1306_WIDTH, 100);
     }
 }
@@ -125,7 +122,7 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob k) {
 	char cc_string[4];
 	char value_string[4];
 
-	sprintf(channel_string, "%.2d", (int) k.channel);
+	sprintf(channel_string, "%.2d", (int) k.channel + 1);
 	sprintf(cc_string, "%.3d", (int) k.cc);
 	sprintf(value_string, "%.3d", (int) k.value);
 
@@ -142,14 +139,14 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob k) {
 	ssd1306_SetCursor(105, 0);
 	ssd1306_WriteString(value_string, Font_7x10, White);
 
-	// Draw first label
+	// Draw main label
 	len_label = strlen(k.label);
 	x = ((14 - len_label) / 2) * 9;
 	if (len_label % 2 != 0) x += 5;
 	ssd1306_SetCursor(x, 16);
 	ssd1306_WriteString(k.label, Font_9x18, White);
 
-	// Draw first label
+	// Draw sub label(s)
 	len_label = strlen(k.sub_label);
 	x = ((14 - len_label) / 2) * 9;
 	if (len_label % 2 != 0) x += 5;

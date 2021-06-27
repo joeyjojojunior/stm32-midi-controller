@@ -85,15 +85,14 @@ void MX_USB_DEVICE_Init(void)
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
 }
 
-void MX_USB_Send_Midi(uint8_t value, uint8_t cc) {
+void MX_USB_Send_Midi(uint8_t channel, uint8_t cc, uint8_t value) {
 		  uint8_t buffer[4];
 		  const uint8_t usbFrame = (0 << 4) | 0x0B;
-		  const uint8_t midiCommand = 0xB0 | 0x00;
-		  const uint8_t controlChannel = cc;
-		  //const uint8_t value = 30;
+		  const uint8_t midiCommand = 0xB0 | channel;
+
 		  buffer[0] = usbFrame;
 		  buffer[1] = midiCommand;
-		  buffer[2] = controlChannel;
+		  buffer[2] = cc;
 		  buffer[3] = value;
 
 		  switch(USBD_LL_Transmit(&hUsbDeviceFS, MIDI_IN_EP, buffer, 4))
