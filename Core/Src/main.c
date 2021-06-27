@@ -39,7 +39,7 @@
 /* USER CODE BEGIN PD */
 #define I2C_MUX_MASTER 0x71 << 1
 #define I2C_MUX_SLAVE 0x70 << 1
-#define I2C_OLED_ADDR 0x78
+
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
 /* USER CODE END PD */
@@ -72,6 +72,7 @@ static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 void i2c_select(uint8_t mux_addr, uint8_t i);
+void dmux_select(uint8_t row, uint8_t col);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -88,6 +89,18 @@ uint16_t ADC_DMA_average(int channel) {
 		return 1;
 
 	return adc_sum / NUM_ADC_SAMPLES;
+}
+
+void dmux_select(uint8_t row, uint8_t col) {
+	i2c_select(I2C_MUX_MASTER, row);
+	i2c_select(I2C_MUX_SLAVE, col);
+}
+
+void i2c_select(uint8_t mux_addr, uint8_t i) {
+	if (i > 7) return;
+	unsigned char temp[1];
+	temp[0] = 1 << i;
+	HAL_I2C_Master_Transmit(&hi2c1, mux_addr, temp, 1, 100);
 }
 /* USER CODE END 0 */
 
@@ -129,10 +142,10 @@ int main(void) {
 	// Init displays
 	for (int i = 0; i < 4; i++) {
 		dmux_select(knobs[i].row, knobs[i].col);
-		ssd1306_Init(&hi2c1, I2C_OLED_ADDR);
+		ssd1306_Init(&hi2c1);
 		HAL_Delay(1000);
-		ssd1306_Fill(Black);
-		ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
+		//ssd1306_Fill(Black);
+		//ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
 	}
 
 	/* USER CODE END 2 */
@@ -154,8 +167,7 @@ int main(void) {
 			if (curr_MIDI_val != last_MIDI_val) {
 				knobs[i].value = curr_MIDI_val;
 				dmux_select(knobs[i].row, knobs[i].col);
-				ssd1306_WriteKnob(knobs[i]);
-				ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
+				ssd1306_WriteKnob(&hi2c1, knobs[i]);
 			}
 		}
 		/* USER CODE END WHILE */
@@ -405,55 +417,7 @@ static void MX_GPIO_Init(void) {
 
 }
 
-void dmux_select(uint8_t row, uint8_t col) {
-	uint8_t master_mux_i;
-	uint8_t slave_mux_i;
-	/*
-	 if (row == 0 && col == 0) {
-	 master_mux_i = 0;
-	 slave_mux_i = 0;
-	 } else if (row == 0 && col == 1) {
-	 master_mux_i = 0;
-	 slave_mux_i = 1;
-	 } else if (row == 1 && col == 0) {
-	 master_mux_i = 1;
-	 slave_mux_i = 0;
-	 } else if (row == 1 && col == 1) {
-	 master_mux_i = 1;
-	 slave_mux_i = 1;
-	 }
-
-	 switch (n) {
-	 case 0:
-	 master_mux_i = 0;
-	 slave_mux_i = 0;
-	 break;
-	 case 1:
-	 master_mux_i = 0;
-	 slave_mux_i = 1;
-	 break;
-	 case 2:
-	 master_mux_i = 1;
-	 slave_mux_i = 0;
-	 break;
-	 case 3:
-	 master_mux_i = 1;
-	 slave_mux_i = 1;
-	 break;
-	 }
-	 */
-	i2c_select(I2C_MUX_MASTER, row);
-	i2c_select(I2C_MUX_SLAVE, col);
-}
-
 /* USER CODE BEGIN 4 */
-void i2c_select(uint8_t mux_addr, uint8_t i) {
-	if (i > 7) return;
-	unsigned char temp[1];
-	temp[0] = 1 << i;
-	HAL_I2C_Master_Transmit(&hi2c1, mux_addr, temp, 1, 100);
-}
-
 // Called when first half of buffer is filled
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
 }
