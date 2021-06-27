@@ -58,28 +58,18 @@ RTC_HandleTypeDef hrtc;
 SD_HandleTypeDef hsd;
 
 /* USER CODE BEGIN PV */
-uint8_t is_DMA_done = 0;
-uint8_t processing_data = 0;
-
 uint16_t adcBuf[NUM_ADC_CHANNELS * NUM_ADC_SAMPLES] = { 0 };
 uint16_t adcFiltered[4] = { 0 };
 uint16_t adcFilteredPrev[4] = { 0 };
-float EMA_A = 1;
 
 uint32_t midiValues[4];
 uint32_t midiValuesPrev[4];
 double slope = 1.0 * 127 / 249;
-//double slope = 1.0 * 127 / 1024;
 float EMA_A_M = 0.6;
 
 char labelStrings[4][32] = { "Cutoff", "Resonance", "Filt Env", "Env Decay" };
 char adcStrings[4][4];
 char midiStrings[4][4];
-
-char adcStr1[4];
-char adcStr2[4];
-char adcStr3[4];
-char adcStr4[4];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -179,13 +169,10 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 	HAL_ADC_Start(&hadc1);
 	while (1) {
-		//if (!processing_data) HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcBuf, NUM_ADC_CHANNELS * NUM_ADC_SAMPLES);
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcBuf, NUM_ADC_CHANNELS * NUM_ADC_SAMPLES);
 		for (int i = 0; i < 4; i++) {
-			processing_data = 1;
 			adcFilteredPrev[i] = adcFiltered[i];
 			midiValuesPrev[i] = midiValues[i];
-			//adcFiltered[i] = (EMA_A * adcBuf[i]) + ((1 - EMA_A) * adcFiltered[i]);
 			adcFiltered[i] = ADC_DMA_average(i);
 			midiValues[i] = MIN((EMA_A_M * slope * adcFiltered[i]) + ((1 - EMA_A_M) * midiValues[i]), 127);
 			if (midiValuesPrev[i] != midiValues[i]) {
@@ -200,10 +187,8 @@ int main(void) {
 				ssd1306_WriteString(adcStrings[i], Font_11x18, White);
 				ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
 				MX_USB_Send_Midi((uint8_t) midiValues[i], i + 17);
-				//HAL_Delay(1);
 			}
 		}
-		processing_data = 0;
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
