@@ -67,7 +67,10 @@ uint32_t midiValuesPrev[4];
 double slope = 1.0 * 127 / 249;
 float EMA_A_M = 0.6;
 
-char labelStrings[4][32] = { "Cutoff", "Resonance", "Filt Env", "Env Decay" };
+char topLineStrings[4][32] = { "120     >>     ", "023    <<<     ", "023      <     ", "023            " };
+char labelStrings[4][32] = { "Cutoff", "Resonance", "Osc 1", "Env 1 Decay" };
+char labelStrings2[4][32] = { "Filter 1", "Filter 1", "SAW", "Velocity" };
+
 char adcStrings[4][4];
 char midiStrings[4][4];
 /* USER CODE END PV */
@@ -180,11 +183,27 @@ int main(void) {
 				sprintf(midiStrings[i], "%.3d", (int) midiValues[i]);
 				dmux_select(i);
 				ssd1306_Fill(Black);
+
+				// Draw top line
 				ssd1306_SetCursor(0, 0);
-				//ssd1306_WriteString(labelStrings[i], Font_11x18, White);
-				ssd1306_WriteString(midiStrings[i], Font_11x18, White);
-				ssd1306_SetCursor(0, 36);
-				ssd1306_WriteString(adcStrings[i], Font_11x18, White);
+				ssd1306_WriteString(topLineStrings[i], Font_7x10, White);
+				ssd1306_SetCursor(105, 0);
+				ssd1306_WriteString(midiStrings[i], Font_7x10, White);
+
+				// Draw first label
+				uint8_t x = ((14 - strlen(labelStrings[i])) / 2) * 9;
+				if (strlen(labelStrings[i]) % 2 != 0) x += 5;
+				ssd1306_SetCursor(x, 16);
+				ssd1306_WriteString(labelStrings[i], Font_9x18, White);
+
+				// Draw second label
+				x = ((14 - strlen(labelStrings2[i])) / 2) * 9;
+				if (strlen(labelStrings2[i]) % 2 != 0) x += 5;
+				ssd1306_SetCursor(x, 40);
+				ssd1306_WriteString(labelStrings2[i], Font_9x18, White);
+
+				//ssd1306_SetCursor(0, 36);
+				//ssd1306_WriteString(adcStrings[i], Font_11x18, White);
 				ssd1306_UpdateScreen(&hi2c1, I2C_OLED_ADDR);
 				MX_USB_Send_Midi((uint8_t) midiValues[i], i + 17);
 			}

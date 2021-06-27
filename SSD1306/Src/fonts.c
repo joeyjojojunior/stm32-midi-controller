@@ -298,5 +298,6 @@ static const uint16_t Font16x26 [] = {
 };
 
 FontDef Font_7x10 = {7,10,Font7x10};
+FontDef Font_9x18 = {9,18,Font11x18};
 FontDef Font_11x18 = {11,18,Font11x18};
 FontDef Font_16x26 = {16,26,Font16x26};

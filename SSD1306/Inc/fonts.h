@@ -16,6 +16,7 @@ typedef struct {
 //  Export the 3 available fonts
 //
 extern FontDef Font_7x10;
+extern FontDef Font_9x18;
 extern FontDef Font_11x18;
 extern FontDef Font_16x26;
 
