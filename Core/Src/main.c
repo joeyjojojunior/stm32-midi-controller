@@ -75,7 +75,7 @@ void dmux_select(uint8_t row, uint8_t col);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint16_t ADC_DMA_average(int channel) {
+uint16_t ADC_DMA_Average(int channel) {
 	uint32_t adc_sum;
 	int i;
 
@@ -83,8 +83,9 @@ uint16_t ADC_DMA_average(int channel) {
 	if (channel < NUM_ADC_CHANNELS) {
 		for (i = 0; i < NUM_ADC_SAMPLES; i++)
 			adc_sum += adcBuf[channel + i * NUM_ADC_CHANNELS];
-	} else
+	} else {
 		return 1;
+	}
 
 	return adc_sum / NUM_ADC_SAMPLES;
 }
@@ -108,7 +109,12 @@ void i2c_select(uint8_t mux_addr, uint8_t i) {
  */
 int main(void) {
 	/* USER CODE BEGIN 1 */
-
+	Knob knobs[4] = {
+			{.init_value = 32, .row = 0, .col = 0, .label = "Cutoff", .sub_label = "Filter 1", .channel = 0, .cc = 17, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
+			{.init_value = 64, .row = 0, .col = 1, .label = "Resonance", .sub_label = "Filter 2", .channel = 1, .cc = 18, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
+			{.init_value = 127, .row = 1, .col = 0, .label = "Filter Env", .sub_label = "", .channel = 2, .cc = 19, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
+			{.init_value = 42, .row = 1, .col = 1, .label = "Osc 1", .sub_label = "Velocity", .channel = 3, .cc = 20, .value = 0, .max_values = 4, .max_range = 127, .isLocked = 1}
+	};
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -117,14 +123,12 @@ int main(void) {
 	HAL_Init();
 
 	/* USER CODE BEGIN Init */
-
 	/* USER CODE END Init */
 
 	/* Configure the system clock */
 	SystemClock_Config();
 
 	/* USER CODE BEGIN SysInit */
-
 	/* USER CODE END SysInit */
 
 	/* Initialize all configured peripherals */
@@ -141,7 +145,7 @@ int main(void) {
 	for (int i = 0; i < 4; i++) {
 		dmux_select(knobs[i].row, knobs[i].col);
 		ssd1306_Init(&hi2c1);
-		HAL_Delay(100);
+		HAL_Delay(10);
 	}
 
 	knobs[3].sub_labels = malloc(sizeof(*knobs[3].sub_labels) * (knobs[3].max_values));
@@ -149,32 +153,27 @@ int main(void) {
 	strncpy(knobs[3].sub_labels[1], "Saw", MAX_LABEL_CHARS);
 	strncpy(knobs[3].sub_labels[2], "Square", MAX_LABEL_CHARS);
 	strncpy(knobs[3].sub_labels[3], "Pulse", MAX_LABEL_CHARS);
-
-
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	HAL_ADC_Start(&hadc1);
+
 	while (1) {
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcBuf, NUM_ADC_CHANNELS * NUM_ADC_SAMPLES);
 
 		for (int i = 0; i < 4; i++) {
-			uint8_t last_MIDI_val = 0;
-			uint8_t curr_MIDI_val = 0;
-
-			adcAveraged[i] = ADC_DMA_average(i);
+			adcAveraged[i] = ADC_DMA_Average(i);
 			float midi_scale_factor = 1.0 * (knobs[i].max_values) / UPPER_BOUND_ADC;
 
-			last_MIDI_val = knobs[i].value;
-			curr_MIDI_val = MIN((EMA_A * midi_scale_factor * adcAveraged[i]) + ((1 - EMA_A) * knobs[i].value), 127);
+			uint8_t last_MIDI_val = knobs[i].value;
+			uint8_t curr_MIDI_val = MIN((EMA_A * midi_scale_factor * adcAveraged[i]) + ((1 - EMA_A) * knobs[i].value), 127);
 
 			if (curr_MIDI_val != last_MIDI_val) {
 				knobs[i].value = curr_MIDI_val;
 				dmux_select(knobs[i].row, knobs[i].col);
-				ssd1306_WriteKnob(&hi2c1, knobs[i]);
-				//MX_USB_Send_Midi(knobs[i].channel, knobs[i].cc, knobs[i].value);
-				MX_USB_Send_Midi(knobs[i].channel, knobs[i].cc, (knobs[i].value)*(knobs[i].max_range/(knobs[i].max_values-1)));
+				ssd1306_WriteKnob(&hi2c1, &knobs[i]);
+				if (!knobs[i].isLocked) MX_USB_Send_Midi(knobs[i].channel, knobs[i].cc, Knob_Map(knobs[i]));
 			}
 		}
 		/* USER CODE END WHILE */
