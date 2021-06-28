@@ -39,7 +39,7 @@
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
 #define EMA_A 0.7
-#define UPPER_BOUND_ADC 253
+#define UPPER_BOUND_ADC 245
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -111,7 +111,7 @@ int main(void) {
 	/* USER CODE BEGIN 1 */
 	Knob knobs[4] = {
 			{.init_value = 32, .row = 0, .col = 0, .label = "Cutoff", .sub_label = "Filter 1", .channel = 0, .cc = 17, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
-			{.init_value = 64, .row = 0, .col = 1, .label = "Resonance", .sub_label = "Filter 2", .channel = 1, .cc = 18, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
+			{.init_value = 63, .row = 0, .col = 1, .label = "Resonance", .sub_label = "Filter 2", .channel = 1, .cc = 18, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
 			{.init_value = 127, .row = 1, .col = 0, .label = "Filter Env", .sub_label = "", .channel = 2, .cc = 19, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
 			{.init_value = 42, .row = 1, .col = 1, .label = "Osc 1", .sub_label = "Velocity", .channel = 3, .cc = 20, .value = 0, .max_values = 4, .max_range = 127, .isLocked = 1}
 	};
