@@ -124,7 +124,7 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob k) {
 
 	sprintf(channel_string, "%.2d", (int) k.channel + 1);
 	sprintf(cc_string, "%.3d", (int) k.cc);
-	sprintf(value_string, "%.3d", (int) k.value);
+	sprintf(value_string, "%.3d", (int) k.value*(k.max_range/(k.max_values-1)));
 
 	// Clear buffer
 	ssd1306_Fill(Black);

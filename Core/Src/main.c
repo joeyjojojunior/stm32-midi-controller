@@ -145,9 +145,11 @@ int main(void) {
 	}
 
 	knobs[3].sub_labels = malloc(sizeof(*knobs[3].sub_labels) * (knobs[3].max_values));
-	strncpy(knobs[3].sub_labels[0], "Triangle", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[0], "Sine", MAX_LABEL_CHARS);
 	strncpy(knobs[3].sub_labels[1], "Saw", MAX_LABEL_CHARS);
-	strncpy(knobs[3].sub_labels[2], "Pulse", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[2], "Square", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[3], "Pulse", MAX_LABEL_CHARS);
+
 
 	/* USER CODE END 2 */
 
@@ -171,7 +173,8 @@ int main(void) {
 				knobs[i].value = curr_MIDI_val;
 				dmux_select(knobs[i].row, knobs[i].col);
 				ssd1306_WriteKnob(&hi2c1, knobs[i]);
-				MX_USB_Send_Midi(knobs[i].channel, knobs[i].cc, knobs[i].value);
+				//MX_USB_Send_Midi(knobs[i].channel, knobs[i].cc, knobs[i].value);
+				MX_USB_Send_Midi(knobs[i].channel, knobs[i].cc, (knobs[i].value)*(knobs[i].max_range/(knobs[i].max_values-1)));
 			}
 		}
 		/* USER CODE END WHILE */
