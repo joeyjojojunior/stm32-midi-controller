@@ -9,20 +9,19 @@ static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
 // Screen object
 static SSD1306_t SSD1306;
 
-//
 //  Send a byte to the command register
-//
 static uint8_t ssd1306_WriteCommand(I2C_HandleTypeDef *hi2c, uint8_t command) {
 	return HAL_I2C_Mem_Write(hi2c, SSD1306_I2C_ADDR, 0x00, 1, &command, 1, 10);
 }
 
-//
 //  Initialize the oled screen
-//
-uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c) {
+uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c, Knob *k) {
 	// Wait for the screen to boot
 	HAL_Delay(100);
 	int status = 0;
+
+	// Select the screen to init
+	ssd1306_Select(hi2c, k);
 
 	// Init LCD
 	status += ssd1306_WriteCommand(hi2c, 0xAE);   // Display off
@@ -81,9 +80,7 @@ uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c) {
 	return 0;
 }
 
-//
 //  Fill the whole screen with the given color
-//
 void ssd1306_Fill(SSD1306_COLOR color) {
 	// Fill screenbuffer with a constant value (color)
 	uint32_t i;
@@ -93,9 +90,7 @@ void ssd1306_Fill(SSD1306_COLOR color) {
 	}
 }
 
-//
 //  Write the screenbuffer with changed to the screen
-//
 void ssd1306_UpdateScreen(I2C_HandleTypeDef *hi2c) {
 	for (uint8_t i = 0; i < 8; i++) {
 		ssd1306_WriteCommand(hi2c, 0xB0 + i);
@@ -105,14 +100,14 @@ void ssd1306_UpdateScreen(I2C_HandleTypeDef *hi2c) {
 	}
 }
 
-//
 // Write a knob's values to the screen
-//
 void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
 	char channel_string[3];
 	char cc_string[4];
 	char init_indicator_string[16] = "       @       ";
 	char value_string[4];
+
+	ssd1306_Select(hi2c, k);
 
 	snprintf(channel_string, sizeof(channel_string)/sizeof(channel_string[0]), "%.2d", (int) k->channel + 1);
 	snprintf(cc_string, sizeof(cc_string)/sizeof(cc_string[0]), "%.3d", (int) k->cc);
@@ -177,10 +172,7 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
 
 	}
 
-	//ssd1306_SetCursor((SSD1306_WIDTH - sizeof(init_indicator_string)/sizeof(init_indicator_string[0]) * NumFont_5x7.FontWidth) / 2, 4);
 	ssd1306_SetCursor((SSD1306_WIDTH - strlen(init_indicator_string) * NumFont_5x7.FontWidth) / 2, 4);
-	//ssd1306_SetCursor((SSD1306_WIDTH - 16 * NumFont_5x7.FontWidth) / 2, 4);
-
 	ssd1306_WriteString(init_indicator_string, NumFont_5x7, White);
 
 	ssd1306_SetCursor(SSD1306_WIDTH - sizeof(value_string)/sizeof(value_string[0]) * NumFont_5x7.FontWidth - 1, 4);
@@ -191,9 +183,8 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
 
 	// Draw main label
 	len_label = strlen(k->label);
-	//x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_10x18.FontWidth;
 	x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
-	//if (len_label % 2 != 0) x += 5;
+	if (len_label % 2 != 0) x += 5;
 	ssd1306_SetCursor(x, 16);
 	ssd1306_WriteString(k->label, Font_10x18, White);
 
@@ -202,8 +193,6 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
 	if (k->max_values < 127) {
 		len_label = strlen(k->sub_labels[k->value]);
 		x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
-
-		//x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_10x18.FontWidth;
 		if (len_label % 2 != 0) x += 5;
 		ssd1306_SetCursor(x, 40);
 		ssd1306_WriteString(k->sub_labels[k->value], Font_10x18, White);
@@ -211,8 +200,6 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
 		// Full-range value - draw single sub-label
 		len_label = strlen(k->sub_label);
 		x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
-
-		//x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_10x18.FontWidth;
 		if (len_label % 2 != 0) x += 5;
 		ssd1306_SetCursor(x, 40);
 		ssd1306_WriteString(k->sub_label, Font_10x18, White);
@@ -221,12 +208,10 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
 	ssd1306_UpdateScreen(hi2c);
 }
 
-//
 //  Draw one pixel in the screenbuffer
 //  X => X Coordinate
 //  Y => Y Coordinate
 //  color => Pixel color
-//
 void ssd1306_DrawPixel(uint8_t x, uint8_t y, SSD1306_COLOR color) {
 	if (x >= SSD1306_WIDTH || y >= SSD1306_HEIGHT) {
 		// Don't write outside the buffer
@@ -246,12 +231,10 @@ void ssd1306_DrawPixel(uint8_t x, uint8_t y, SSD1306_COLOR color) {
 	}
 }
 
-//
 //  Draw 1 char to the screen buffer
 //  ch      => Character to write
 //  Font    => Font to use
 //  color   => Black or White
-//
 char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color) {
 	uint32_t i, b, j;
 
@@ -281,9 +264,7 @@ char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color) {
 	return ch;
 }
 
-//
 //  Write full string to screenbuffer
-//
 char ssd1306_WriteString(char *str, FontDef Font, SSD1306_COLOR color) {
 	// Write until null-byte
 	while (*str) {
@@ -300,17 +281,25 @@ char ssd1306_WriteString(char *str, FontDef Font, SSD1306_COLOR color) {
 	return *str;
 }
 
-//
 //  Invert background/foreground colors
-//
 void ssd1306_InvertColors(void) {
 	SSD1306.Inverted = !SSD1306.Inverted;
 }
 
-//
 //  Set cursor position
-//
 void ssd1306_SetCursor(uint8_t x, uint8_t y) {
 	SSD1306.CurrentX = x;
 	SSD1306.CurrentY = y;
+}
+
+void ssd1306_Select(I2C_HandleTypeDef *hi2c, Knob *k) {
+	i2c_Select(hi2c, I2C_MUX_MASTER_ADDR, k->row);
+	i2c_Select(hi2c, I2C_MUX_SLAVE_ADDR, k->col);
+}
+
+void i2c_Select(I2C_HandleTypeDef *hi2c, uint8_t mux_addr, uint8_t i) {
+	if (i > 7) return;
+	unsigned char temp[1];
+	temp[0] = 1 << i;
+	HAL_I2C_Master_Transmit(hi2c, mux_addr, temp, 1, 100);
 }

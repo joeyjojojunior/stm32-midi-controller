@@ -19,10 +19,14 @@
 #include "fonts.h"
 #include "knob.h"
 
-// I2c address
+// i2c address
 #ifndef SSD1306_I2C_ADDR
 #define SSD1306_I2C_ADDR        0x78
 #endif // SSD1306_I2C_ADDR
+
+// i2c mux addresses
+#define I2C_MUX_MASTER_ADDR 0x71 << 1
+#define I2C_MUX_SLAVE_ADDR 0x70 << 1
 
 // SSD1306 width in pixels
 #ifndef SSD1306_WIDTH
@@ -57,7 +61,7 @@ typedef struct {
 //  Function definitions
 //
 
-uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c);
+uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c, Knob *k);
 void ssd1306_Fill(SSD1306_COLOR color);
 void ssd1306_UpdateScreen(I2C_HandleTypeDef *hi2c);
 void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k);
@@ -66,5 +70,6 @@ char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color);
 char ssd1306_WriteString(char* str, FontDef Font, SSD1306_COLOR color);
 void ssd1306_SetCursor(uint8_t x, uint8_t y);
 void ssd1306_InvertColors(void);
-
+void ssd1306_Select(I2C_HandleTypeDef *hi2c, Knob *k);
+void i2c_Select(I2C_HandleTypeDef *hi2c, uint8_t mux_addr, uint8_t i);
 #endif  // _SSD1306_H

@@ -33,7 +33,6 @@
 #include "usbd_def.h"
 
 /* USER CODE BEGIN INCLUDE */
-
 /* USER CODE END INCLUDE */
 
 /** @addtogroup USBD_OTG_DRIVER
