@@ -39,7 +39,8 @@
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
 #define EMA_A 0.7
-#define UPPER_BOUND_ADC 245
+#define UPPER_BOUND_ADC 250
+#define MIDI_MAX 127
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -110,10 +111,10 @@ void i2c_select(uint8_t mux_addr, uint8_t i) {
 int main(void) {
 	/* USER CODE BEGIN 1 */
 	Knob knobs[4] = {
-			{.init_value = 32, .row = 0, .col = 0, .label = "Cutoff", .sub_label = "Filter 1", .channel = 0, .cc = 17, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
-			{.init_value = 63, .row = 0, .col = 1, .label = "Resonance", .sub_label = "Filter 2", .channel = 1, .cc = 18, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
-			{.init_value = 127, .row = 1, .col = 0, .label = "Filter Env", .sub_label = "", .channel = 2, .cc = 19, .value = 0, .max_values = 127, .max_range = 127, .isLocked = 1},
-			{.init_value = 42, .row = 1, .col = 1, .label = "Osc 1", .sub_label = "Velocity", .channel = 3, .cc = 20, .value = 0, .max_values = 4, .max_range = 127, .isLocked = 1}
+			{.init_value = 0, .row = 0, .col = 0, .label = "Cutoff", .sub_label = "Filter 1", .channel = 0, .cc = 17, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0},
+			{.init_value = 127, .row = 0, .col = 1, .label = "Resonance", .sub_label = "Filter 2", .channel = 1, .cc = 18, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0},
+			{.init_value = 3, .row = 1, .col = 0, .label = "Osc 0", .sub_label = "", .channel = 2, .cc = 19, .value = 0, .max_values = 12, .max_range = 127, .isLocked = 0},
+			{.init_value = 4, .row = 1, .col = 1, .label = "Osc 1", .sub_label = "Velocity", .channel = 3, .cc = 20, .value = 0, .max_values = 12, .max_range = 11, .isLocked = 0}
 	};
 	/* USER CODE END 1 */
 
@@ -149,10 +150,32 @@ int main(void) {
 	}
 
 	knobs[3].sub_labels = malloc(sizeof(*knobs[3].sub_labels) * (knobs[3].max_values));
-	strncpy(knobs[3].sub_labels[0], "Sine", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[0], "Sine><", MAX_LABEL_CHARS);
 	strncpy(knobs[3].sub_labels[1], "Saw", MAX_LABEL_CHARS);
 	strncpy(knobs[3].sub_labels[2], "Square", MAX_LABEL_CHARS);
-	strncpy(knobs[3].sub_labels[3], "Pulse", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[3], "Pulse1", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[4], "Pulse2", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[5], "Pulse3", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[6], "Pulse4", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[7], "Pulse5", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[8], "Pulse6", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[9], "Pulse7", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[10], "Pulse8", MAX_LABEL_CHARS);
+	strncpy(knobs[3].sub_labels[11], "Pulse9", MAX_LABEL_CHARS);
+
+	knobs[2].sub_labels = malloc(sizeof(*knobs[2].sub_labels) * (knobs[2].max_values));
+	strncpy(knobs[2].sub_labels[0], "Sine><", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[1], "Saw", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[2], "Square", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[3], "Pulse1", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[4], "Pulse2", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[5], "Pulse3", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[6], "Pulse4", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[7], "Pulse5", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[8], "Pulse6", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[9], "Pulse7", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[10], "Pulse8", MAX_LABEL_CHARS);
+	strncpy(knobs[2].sub_labels[11], "Pulse9", MAX_LABEL_CHARS);
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -167,13 +190,15 @@ int main(void) {
 			float midi_scale_factor = 1.0 * (knobs[i].max_values) / UPPER_BOUND_ADC;
 
 			uint8_t last_MIDI_val = knobs[i].value;
-			uint8_t curr_MIDI_val = MIN((EMA_A * midi_scale_factor * adcAveraged[i]) + ((1 - EMA_A) * knobs[i].value), 127);
+			uint8_t curr_MIDI_val = MIN((EMA_A * midi_scale_factor * adcAveraged[i]) + ((1 - EMA_A) * knobs[i].value), knobs[i].max_range);
 
 			if (curr_MIDI_val != last_MIDI_val) {
 				knobs[i].value = curr_MIDI_val;
 				dmux_select(knobs[i].row, knobs[i].col);
 				ssd1306_WriteKnob(&hi2c1, &knobs[i]);
-				if (!knobs[i].isLocked) MX_USB_Send_Midi(knobs[i].channel, knobs[i].cc, Knob_Map(knobs[i]));
+
+				if (!knobs[i].isLocked)
+					MX_USB_Send_Midi(knobs[i].channel, knobs[i].cc, KnobMap(&knobs[i], knobs[i].value, knobs[i].max_range));
 			}
 		}
 		/* USER CODE END WHILE */

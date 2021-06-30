@@ -23,6 +23,6 @@ typedef struct Knob {
 	uint8_t isLocked;
 } Knob;
 
-uint8_t Knob_Map(Knob k);
+uint8_t KnobMap(Knob *k, uint8_t value, uint8_t m);
 
 #endif /* INC_KNOB_H_ */

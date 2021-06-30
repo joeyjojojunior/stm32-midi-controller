@@ -2,9 +2,9 @@ ssd1306.c:15:16:ssd1306_WriteCommand	32	static
 ssd1306.c:22:9:ssd1306_Init	24	static
 ssd1306.c:87:6:ssd1306_Fill	24	static
 ssd1306.c:99:6:ssd1306_UpdateScreen	40	static
-ssd1306.c:111:6:ssd1306_WriteKnob	104	static
-ssd1306.c:240:6:ssd1306_DrawPixel	16	static
-ssd1306.c:265:6:ssd1306_WriteChar	48	static
-ssd1306.c:297:6:ssd1306_WriteString	24	static
-ssd1306.c:316:6:ssd1306_InvertColors	4	static
-ssd1306.c:323:6:ssd1306_SetCursor	16	static
+ssd1306.c:111:6:ssd1306_WriteKnob	72	static
+ssd1306.c:230:6:ssd1306_DrawPixel	16	static
+ssd1306.c:255:6:ssd1306_WriteChar	48	static
+ssd1306.c:287:6:ssd1306_WriteString	24	static
+ssd1306.c:306:6:ssd1306_InvertColors	4	static
+ssd1306.c:313:6:ssd1306_SetCursor	16	static

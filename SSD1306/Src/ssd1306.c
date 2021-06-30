@@ -109,123 +109,113 @@ void ssd1306_UpdateScreen(I2C_HandleTypeDef *hi2c) {
 // Write a knob's values to the screen
 //
 void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
-	uint8_t len_label = 0;
-	uint8_t x = 0;
-
-	//char chan_cc_string[7];
 	char channel_string[3];
-	char cc_string[5];
-	char init_indicator_string[10] = "   [*]   ";
-	//char init_indicator_string[10];
+	char cc_string[4];
+	char init_indicator_string[16] = "       @       ";
 	char value_string[4];
 
-	sprintf(channel_string, "%.2d", (int) k->channel + 1);
-	sprintf(cc_string, ",%.3d", (int) k->cc);
-	sprintf(value_string, "%.3d", (int) Knob_Map(*k));
+	snprintf(channel_string, sizeof(channel_string)/sizeof(channel_string[0]), "%.2d", (int) k->channel + 1);
+	snprintf(cc_string, sizeof(cc_string)/sizeof(cc_string[0]), "%.3d", (int) k->cc);
+	snprintf(value_string, sizeof(value_string)/sizeof(value_string[0]), "%.3d", (int) KnobMap(k, k->value, k->max_range));
 
 	// Clear buffer
 	ssd1306_Fill(Black);
 
 	// Draw top line
 	ssd1306_SetCursor(0, 0);
-	ssd1306_WriteString(channel_string, Font_7x10, White);
-	ssd1306_SetCursor(12, 0);
-	ssd1306_WriteString(cc_string, Font_7x10, White);
+	ssd1306_WriteString(channel_string, NumFont_5x7, White);
 
-	//double init_percent_change = abs(k->init_value - k->value) / ((double) k->max_values);
-	uint8_t init_percent_change = (abs(k->init_value - k->value) / (127.0f)) * 100;
+	ssd1306_SetCursor(0, 8);
+	ssd1306_WriteString(cc_string, NumFont_5x7, White);
 
-	//sprintf(init_indicator_string, "%d", init_percent_change);
+	int8_t init_value_diff = KnobMap(k, k->init_value, 127) - KnobMap(k, k->value, 127);
+	uint8_t init_percent_change = (abs(init_value_diff) / (127.0f)) * 100;
 
-	ssd1306_SetCursor(42, 0);
-
-	if (k->init_value - k->value > 0) {
-		if (init_percent_change < 33) {
-			strncpy(init_indicator_string, "  >      ", 10);
-		} else if (init_percent_change >= 33 && init_percent_change < 66) {
-			strncpy(init_indicator_string, " >>      ", 10);
-		} else if (init_percent_change >= 66) {
-			strncpy(init_indicator_string, ">>>      ", 10);
-		}
-	} else if (k->init_value - k->value < 0) {
-		if (init_percent_change < 33) {
-			strncpy(init_indicator_string, "    <  ", 10);
-		} else if (init_percent_change >= 33 && init_percent_change < 66) {
-			strncpy(init_indicator_string, "    << ", 10);
-		} else if (init_percent_change >= 66) {
-			strncpy(init_indicator_string, "    <<<", 10);
-		}
-	} else {
-		//ssd1306_SetCursor(60, 0);
-		strncpy(init_indicator_string, "  [*]  ", 10);
+	if (init_value_diff == 0) {
+		strcpy(init_indicator_string, "       @       ");
 		k->isLocked = 0;
+	} else {
+		if (init_percent_change < 15) {
+			if (init_value_diff > 0)
+				strcpy(init_indicator_string, "      >        ");
+			else
+				strcpy(init_indicator_string, "        <      ");
+		} else if (init_percent_change >= 15 && init_percent_change < 30) {
+			if (init_value_diff > 0)
+				strcpy(init_indicator_string, "     >>        ");
+			else
+				strcpy(init_indicator_string, "        <<     ");
+		} else if (init_percent_change >= 30 && init_percent_change < 45) {
+			if (init_value_diff > 0)
+				strcpy(init_indicator_string, "    >>>        ");
+			else
+				strcpy(init_indicator_string, "        <<<    ");
+		} else if (init_percent_change >= 45 && init_percent_change < 61) {
+			if (init_value_diff > 0)
+				strcpy(init_indicator_string, "   >>>>        ");
+			else
+				strcpy(init_indicator_string, "        <<<<   ");
+		} else  if (init_percent_change >= 61 && init_percent_change < 77) {
+			if (init_value_diff > 0)
+				strcpy(init_indicator_string, "  >>>>>        ");
+			else
+				strcpy(init_indicator_string, "        <<<<<  ");
+		} else  if (init_percent_change >= 77 && init_percent_change < 93) {
+			if (init_value_diff > 0)
+				strcpy(init_indicator_string, " >>>>>>        ");
+			else
+				strcpy(init_indicator_string, "        <<<<<< ");
+		} else  if (init_percent_change >= 93) {
+			if (init_value_diff > 0)
+				strcpy(init_indicator_string, ">>>>>>>        ");
+			else
+				strcpy(init_indicator_string, "        <<<<<<<");
+		}
 	}
 
-	/*
-	 if (k->init_value - k->value > 0) {
-	 if (init_percent_change < 25) {
-	 //ssd1306_SetCursor(55, 0);
-	 strncpy(init_indicator_string, "  >[     ", 10);
-	 } else if (init_percent_change >= 25 && init_percent_change < 50) {
-	 //ssd1306_SetCursor(55, 0);
-	 strncpy(init_indicator_string, "  >      ", 10);
-	 } else if (init_percent_change >= 50 && init_percent_change < 75 ) {
-	 //ssd1306_SetCursor(55, 0);
-	 strncpy(init_indicator_string, " >>      ", 10);
-	 } else if (init_percent_change >= 75) {
-	 //ssd1306_SetCursor(50, 0);
-	 strncpy(init_indicator_string, ">>>      ", 10);
-	 }
-	 } else if (k->init_value - k->value < 0) {
-	 //ssd1306_SetCursor(70, 0);
-	 if (init_percent_change < 25) {
-	 //ssd1306_SetCursor(65, 0);
-	 strncpy(init_indicator_string, "     ]<  ", 10);
-	 } else if (init_percent_change >= 25 && init_percent_change < 50) {
-	 //ssd1306_SetCursor(65, 0);
-	 strncpy(init_indicator_string, "      <  ", 10);
-	 } else if (init_percent_change >= 50 && init_percent_change < 75 ) {
-	 //ssd1306_SetCursor(72, 0);
-	 strncpy(init_indicator_string, "      << ", 10);
-	 } else if (init_percent_change >= 75) {
-	 //ssd1306_SetCursor(79, 0);
-	 strncpy(init_indicator_string, "      <<<", 10);
-	 }
-	 } else {
-	 //ssd1306_SetCursor(60, 0);
-	 strncpy(init_indicator_string, "   [*]   ", 10);
-	 k->isLocked = 0;
-	 }
-	 */
+	for (int i = 0; i < sizeof(init_indicator_string)/sizeof(init_indicator_string[0]); i++) {
 
-	//ssd1306_SetCursor(62, 0);
-	ssd1306_WriteString(init_indicator_string, Font_7x10, White);
+	}
 
-	ssd1306_SetCursor(105, 0);
-	ssd1306_WriteString(value_string, Font_7x10, White);
+	//ssd1306_SetCursor((SSD1306_WIDTH - sizeof(init_indicator_string)/sizeof(init_indicator_string[0]) * NumFont_5x7.FontWidth) / 2, 4);
+	ssd1306_SetCursor((SSD1306_WIDTH - strlen(init_indicator_string) * NumFont_5x7.FontWidth) / 2, 4);
+	//ssd1306_SetCursor((SSD1306_WIDTH - 16 * NumFont_5x7.FontWidth) / 2, 4);
+
+	ssd1306_WriteString(init_indicator_string, NumFont_5x7, White);
+
+	ssd1306_SetCursor(SSD1306_WIDTH - sizeof(value_string)/sizeof(value_string[0]) * NumFont_5x7.FontWidth - 1, 4);
+	ssd1306_WriteString(value_string, NumFont_5x7, White);
+
+	uint8_t len_label = 0;
+	uint8_t x = 0;
 
 	// Draw main label
 	len_label = strlen(k->label);
-	x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_9x18.FontWidth;
-	if (len_label % 2 != 0) x += 5;
+	//x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_10x18.FontWidth;
+	x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
+	//if (len_label % 2 != 0) x += 5;
 	ssd1306_SetCursor(x, 16);
-	ssd1306_WriteString(k->label, Font_9x18, White);
+	ssd1306_WriteString(k->label, Font_10x18, White);
 
 	// If the max number of values is restricted, we want to use
-	// sub labels for each choice (e.g. Osc. wave selection)
+	// sub labels for each choice (e.g. osc. wave selection)
 	if (k->max_values < 127) {
 		len_label = strlen(k->sub_labels[k->value]);
-		x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_9x18.FontWidth;
+		x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
+
+		//x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_10x18.FontWidth;
 		if (len_label % 2 != 0) x += 5;
 		ssd1306_SetCursor(x, 40);
-		ssd1306_WriteString(k->sub_labels[k->value], Font_9x18, White);
+		ssd1306_WriteString(k->sub_labels[k->value], Font_10x18, White);
 	} else {
 		// Full-range value - draw single sub-label
 		len_label = strlen(k->sub_label);
-		x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_9x18.FontWidth;
+		x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
+
+		//x = ((MAX_LABEL_CHARS - len_label) / 2) * Font_10x18.FontWidth;
 		if (len_label % 2 != 0) x += 5;
 		ssd1306_SetCursor(x, 40);
-		ssd1306_WriteString(k->sub_label, Font_9x18, White);
+		ssd1306_WriteString(k->sub_label, Font_10x18, White);
 	}
 
 	ssd1306_UpdateScreen(hi2c);
