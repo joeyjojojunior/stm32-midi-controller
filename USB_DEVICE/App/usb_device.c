@@ -1,22 +1,22 @@
- /* USER CODE BEGIN Header */
+/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : usb_device.c
-  * @version        : v1.0_Cube
-  * @brief          : This file implements the USB Device
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : usb_device.c
+ * @version        : v1.0_Cube
+ * @brief          : This file implements the USB Device
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under Ultimate Liberty license
+ * SLA0044, the "License"; You may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at:
+ *                             www.st.com/SLA0044
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -24,8 +24,6 @@
 #include "usb_device.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
-#include "usbd_audio.h"
-#include "usbd_audio_if.h"
 
 /* USER CODE BEGIN Includes */
 #include "usbd_midi.h"
@@ -56,73 +54,67 @@ USBD_HandleTypeDef hUsbDeviceFS;
  * -- Insert your external function declaration here --
  */
 /* USER CODE BEGIN 1 */
-void MX_USB_DEVICE_Init(void)
-{
-  /* USER CODE BEGIN USB_DEVICE_Init_PreTreatment */
+void MX_USB_DEVICE_Init(void) {
+    /* USER CODE BEGIN USB_DEVICE_Init_PreTreatment */
 
-  /* USER CODE END USB_DEVICE_Init_PreTreatment */
+    /* USER CODE END USB_DEVICE_Init_PreTreatment */
 
-  /* Init Device Library, add supported class and start the library. */
-  if (USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_Midi_ClassDriver) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_Midi_RegisterInterface(&hUsbDeviceFS, &USBD_Midi_fops) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_Start(&hUsbDeviceFS) != USBD_OK)
-  {
-    Error_Handler();
-  }
+    /* Init Device Library, add supported class and start the library. */
+    if (USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS) != USBD_OK) {
+        Error_Handler();
+    }
+    if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_Midi_ClassDriver) != USBD_OK) {
+        Error_Handler();
+    }
+    if (USBD_Midi_RegisterInterface(&hUsbDeviceFS, &USBD_Midi_fops) != USBD_OK) {
+        Error_Handler();
+    }
+    if (USBD_Start(&hUsbDeviceFS) != USBD_OK) {
+        Error_Handler();
+    }
 
-  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
+    /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
 
-  /* USER CODE END USB_DEVICE_Init_PostTreatment */
+    /* USER CODE END USB_DEVICE_Init_PostTreatment */
 }
 
 void MX_USB_Send_Midi(uint8_t channel, uint8_t cc, uint8_t value) {
-		  uint8_t buffer[4];
-		  const uint8_t usbFrame = (0 << 4) | 0x0B;
-		  const uint8_t midiCommand = 0xB0 | channel;
+    uint8_t buffer[4];
+    const uint8_t usbFrame = (0 << 4) | 0x0B;
+    const uint8_t midiCommand = 0xB0 | channel;
 
-		  buffer[0] = usbFrame;
-		  buffer[1] = midiCommand;
-		  buffer[2] = cc;
-		  buffer[3] = value;
+    buffer[0] = usbFrame;
+    buffer[1] = midiCommand;
+    buffer[2] = cc;
+    buffer[3] = value;
 
-		  switch(USBD_LL_Transmit(&hUsbDeviceFS, MIDI_IN_EP, buffer, 4))
-		  {
-		  	  //FIXME use errorhandler!
-		  	  case USBD_OK:
-		  		  printf("ok\n");
-		  		  break;
-		  	  case USBD_FAIL:
-		  		  printf("USB SEND FAIL\n");
-		  		  break;
-		  	  case USBD_BUSY:
-		  		  printf("USB SEND BUS\n");
-		  		  break;
-		  	  default:
-		  		  printf("USB SEND ERROR DEFAULT CASE\n");
-		  }
+    switch (USBD_LL_Transmit(&hUsbDeviceFS, MIDI_IN_EP, buffer, 4)) {
+    //FIXME use errorhandler!
+    case USBD_OK:
+        printf("ok\n");
+        break;
+    case USBD_FAIL:
+        printf("USB SEND FAIL\n");
+        break;
+    case USBD_BUSY:
+        printf("USB SEND BUS\n");
+        break;
+    default:
+        printf("USB SEND ERROR DEFAULT CASE\n");
+    }
 }
 /* USER CODE END 1 */
 
-  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
+/* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
 
-  /* USER CODE END USB_DEVICE_Init_PostTreatment */
-
-/**
-  * @}
-  */
+/* USER CODE END USB_DEVICE_Init_PostTreatment */
 
 /**
-  * @}
-  */
+ * @}
+ */
+
+/**
+ * @}
+ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

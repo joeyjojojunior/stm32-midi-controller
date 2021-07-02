@@ -26,7 +26,7 @@ uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c, Knob *k) {
     // Init LCD
     status += ssd1306_WriteCommand(hi2c, 0xAE);   // Display off
     status += ssd1306_WriteCommand(hi2c, 0x20);   // Set Memory Addressing Mode
-    status += ssd1306_WriteCommand(hi2c, 0x10); // 00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
+    status += ssd1306_WriteCommand(hi2c, 0x10);   // 00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
     status += ssd1306_WriteCommand(hi2c, 0xB0);   // Set Page Start Address for Page Addressing Mode,0-7
     status += ssd1306_WriteCommand(hi2c, 0xC8);   // Set COM Output Scan Direction
     status += ssd1306_WriteCommand(hi2c, 0x00);   // Set low column address
@@ -53,7 +53,7 @@ uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c, Knob *k) {
     status += ssd1306_WriteCommand(hi2c, 0x32);   // Enable COM left/right remap
 #else
     status += ssd1306_WriteCommand(hi2c, 0x12);   // Do not use COM left/right remap
-#endif // SSD1306_COM_LR_REMAP
+#endif
 
     status += ssd1306_WriteCommand(hi2c, 0xDB);   // Set vcomh
     status += ssd1306_WriteCommand(hi2c, 0x20);   // 0x20,0.77xVcc
@@ -113,9 +113,9 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
 
     snprintf(channel_string, sizeof(channel_string) / sizeof(channel_string[0]), "%.2d", (int) k->channel + 1);
     snprintf(cc_string, sizeof(cc_string) / sizeof(cc_string[0]), "%.3d", (int) k->cc);
+    snprintf(init_indicator_string, strlen(init_indicator_string), "%s", update_init_indicator(k));
     snprintf(value_string, sizeof(value_string) / sizeof(value_string[0]), "%.3d",
             (int) KnobMap(k, k->value, k->max_range));
-    update_init_indicator(k, init_indicator_string);
 
     ssd1306_SetCursor(0, 0);
     ssd1306_WriteString(channel_string, NumFont_5x7, White);
@@ -141,20 +141,12 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
 
     // If the max number of values is restricted, we want to use
     // sub labels for each choice (e.g. osc. wave selection)
-    if (k->max_values < 127) {
-        len_label = strlen(k->sub_labels[k->value]);
-        x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
-        if (len_label % 2 != 0) x += 5;
-        ssd1306_SetCursor(x, 40);
-        ssd1306_WriteString(k->sub_labels[k->value], Font_10x18, White);
-    } else {
-        // Full-range value - draw single sub-label
-        len_label = strlen(k->sub_label);
-        x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
-        if (len_label % 2 != 0) x += 5;
-        ssd1306_SetCursor(x, 40);
-        ssd1306_WriteString(k->sub_label, Font_10x18, White);
-    }
+    uint8_t sl_index = (k->max_values < 128) ? k->value: 0;
+    len_label = strlen(k->sub_labels[sl_index]);
+    x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
+    if (len_label % 2 != 0) x += 5;
+    ssd1306_SetCursor(x, 40);
+    ssd1306_WriteString(k->sub_labels[sl_index], Font_10x18, White);
 
     ssd1306_UpdateScreen(hi2c);
 }
@@ -258,39 +250,35 @@ void i2c_Select(I2C_HandleTypeDef *hi2c, uint8_t mux_addr, uint8_t i) {
 }
 
 // Update the init value closeness indicator
-void update_init_indicator(Knob *k, char *s) {
+char* update_init_indicator(Knob *k) {
     int8_t init_diff = KnobMap(k, k->init_value, 127) - KnobMap(k, k->value, 127);
     uint8_t init_pct = (abs(init_diff) / 127.0f) * 100;
-    uint8_t iis_len = strlen(s);
 
-    if (init_diff == 0) {
-        snprintf(s, iis_len, "%s", "       @       ");
-        k->isLocked = 0;
-        return;
-    }
+    if (init_diff == 0)    return  "       @       ";
 
     if (init_pct < 15) {
-        if (init_diff > 0) snprintf(s, iis_len, "%s", "      >        ");
-        else               snprintf(s, iis_len, "%s", "        <      ");
+        if (init_diff > 0) return  "      >        ";
+        else               return  "        <      ";
     } else if (init_pct >= 15 && init_pct < 30) {
-        if (init_diff > 0) snprintf(s, iis_len, "%s", "     >>        ");
-        else               snprintf(s, iis_len, "%s", "        <<     ");
+        if (init_diff > 0) return  "     >>        ";
+        else               return  "        <<     ";
     } else if (init_pct >= 30 && init_pct < 45) {
-        if (init_diff > 0) snprintf(s, iis_len, "%s", "    >>>        ");
-        else               snprintf(s, iis_len, "%s", "        <<<    ");
+        if (init_diff > 0) return  "    >>>        ";
+        else               return  "        <<<    ";
     } else if (init_pct >= 45 && init_pct < 61) {
-        if (init_diff > 0) snprintf(s, iis_len, "%s", "   >>>>        ");
-        else               snprintf(s, iis_len, "%s", "        <<<<   ");
+        if (init_diff > 0) return  "   >>>>        ";
+        else               return  "        <<<<   ";
     } else if (init_pct >= 61 && init_pct < 77) {
-        if (init_diff > 0) snprintf(s, iis_len, "%s", "  >>>>>        ");
-        else               snprintf(s, iis_len, "%s", "        <<<<<  ");
+        if (init_diff > 0) return  "  >>>>>        ";
+        else               return  "        <<<<<  ";
     } else if (init_pct >= 77 && init_pct < 93) {
-        if (init_diff > 0) snprintf(s, iis_len, "%s", " >>>>>>        ");
-        else               snprintf(s, iis_len, "%s", "        <<<<<< ");
+        if (init_diff > 0) return  " >>>>>>        ";
+        else               return  "        <<<<<< ";
     } else if (init_pct >= 93) {
-        if (init_diff > 0) snprintf(s, iis_len, "%s", ">>>>>>>        ");
-        else               snprintf(s, iis_len, "%s", "        <<<<<<<");
+        if (init_diff > 0) return  ">>>>>>>        ";
+        else               return  "        <<<<<<<";
+    } else {
+        return " ";
     }
-
 }
 

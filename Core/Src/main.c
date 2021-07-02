@@ -26,6 +26,7 @@
 #include "ssd1306.h"
 #include "knob.h"
 #include <stdio.h>
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,6 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define NUM_KNOBS 4
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
 #define EMA_A 0.7
@@ -68,19 +70,17 @@ static void MX_RTC_Init(void);
 
 /* USER CODE BEGIN PFP */
 uint16_t ADC_DMA_average(int channel);
-void i2c_select(uint8_t mux_addr, uint8_t i);
-void dmux_select(uint8_t row, uint8_t col);
+void MIDI_Send(Knob *k, uint8_t value);
+uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint16_t ADC_DMA_Average(int channel) {
-	uint32_t adc_sum;
-	int i;
+uint16_t ADC_DMA_Average(uint8_t channel) {
+	uint16_t adc_sum = 0;
 
-	adc_sum = 0;
 	if (channel < NUM_ADC_CHANNELS) {
-		for (i = 0; i < NUM_ADC_SAMPLES; i++)
+		for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++)
 			adc_sum += adcBuf[channel + i * NUM_ADC_CHANNELS];
 	} else {
 		return 1;
@@ -106,27 +106,34 @@ uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value) {
 int main(void) {
 	/* USER CODE BEGIN 1 */
 	Knob knobs[4] = {
-			{.init_value = 0, .row = 0, .col = 0, .label = "Cutoff", .sub_label = "Filter 1", .channel = 0, .cc = 17, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0},
-			{.init_value = 127, .row = 0, .col = 1, .label = "Resonance", .sub_label = "Filter 2", .channel = 1, .cc = 18, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0},
-			{.init_value = 3, .row = 1, .col = 0, .label = "Osc 0", .sub_label = "", .channel = 2, .cc = 19, .value = 0, .max_values = 12, .max_range = 127, .isLocked = 0},
-			{.init_value = 4, .row = 1, .col = 1, .label = "Osc 1", .sub_label = "Velocity", .channel = 3, .cc = 20, .value = 0, .max_values = 12, .max_range = 11, .isLocked = 0}
+			{.init_value = 63, .row = 0, .col = 0, .label = "Cutoff", .channel = 0, .cc = 17, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 1},
+			{.init_value = 127, .row = 0, .col = 1, .label = "Resonance", .channel = 1, .cc = 18, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0},
+			{.init_value = 3, .row = 1, .col = 0, .label = "Osc 0", .channel = 2, .cc = 19, .value = 0, .max_values = 7, .max_range = 127, .isLocked = 0},
+			{.init_value = 4, .row = 1, .col = 1, .label = "Osc 1", .channel = 3, .cc = 20, .value = 0, .max_values = 12, .max_range = 11, .isLocked = 0}
 	};
 
 	for (int i = 2; i < 4; i++) {
 		knobs[i].sub_labels = malloc(sizeof(*knobs[i].sub_labels) * (knobs[i].max_values));
-		strncpy(knobs[i].sub_labels[0], "Sine><", MAX_LABEL_CHARS);
-		strncpy(knobs[i].sub_labels[1], "Saw", MAX_LABEL_CHARS);
-		strncpy(knobs[i].sub_labels[2], "Square", MAX_LABEL_CHARS);
-		strncpy(knobs[i].sub_labels[3], "Pulse1", MAX_LABEL_CHARS);
-		strncpy(knobs[i].sub_labels[4], "Pulse2", MAX_LABEL_CHARS);
-		strncpy(knobs[i].sub_labels[5], "Pulse3", MAX_LABEL_CHARS);
-		strncpy(knobs[i].sub_labels[6], "Pulse4", MAX_LABEL_CHARS);
+		strncpy(knobs[i].sub_labels[0], "MultiSaw", MAX_LABEL_CHARS);
+		strncpy(knobs[i].sub_labels[1], "TriWrap", MAX_LABEL_CHARS);
+		strncpy(knobs[i].sub_labels[2], "Noise", MAX_LABEL_CHARS);
+		strncpy(knobs[i].sub_labels[3], "Feedback", MAX_LABEL_CHARS);
+		strncpy(knobs[i].sub_labels[4], "Pulse", MAX_LABEL_CHARS);
+		strncpy(knobs[i].sub_labels[5], "Saw", MAX_LABEL_CHARS);
+		strncpy(knobs[i].sub_labels[6], "Triangle", MAX_LABEL_CHARS);
 		strncpy(knobs[i].sub_labels[7], "Pulse5", MAX_LABEL_CHARS);
 		strncpy(knobs[i].sub_labels[8], "Pulse6", MAX_LABEL_CHARS);
 		strncpy(knobs[i].sub_labels[9], "Pulse7", MAX_LABEL_CHARS);
 		strncpy(knobs[i].sub_labels[10], "Pulse8", MAX_LABEL_CHARS);
 		strncpy(knobs[i].sub_labels[11], "Pulse9", MAX_LABEL_CHARS);
 	}
+
+    knobs[0].sub_labels = malloc(sizeof(*knobs[0].sub_labels));
+    strncpy(knobs[0].sub_labels[0], "Filter 1", MAX_LABEL_CHARS);
+
+    knobs[1].sub_labels = malloc(sizeof(*knobs[1].sub_labels));
+    strncpy(knobs[1].sub_labels[0], "Filter 2", MAX_LABEL_CHARS);
+
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -154,9 +161,9 @@ int main(void) {
 
 	/* USER CODE BEGIN 2 */
 	// Init displays
-	for (int i = 0; i < 4; i++) {
+	for (uint8_t i = 0; i < NUM_KNOBS; i++) {
 		ssd1306_Init(&hi2c1, &knobs[i]);
-		HAL_Delay(10);
+		ssd1306_WriteKnob(&hi2c1, &knobs[i]);
 	}
 	/* USER CODE END 2 */
 
@@ -167,14 +174,14 @@ int main(void) {
 	while (1) {
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcBuf, NUM_ADC_CHANNELS * NUM_ADC_SAMPLES);
 
-		for (int i = 0; i < 4; i++) {
+		for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
 			adcAveraged[i] = ADC_DMA_Average(i);
 			uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
 
 			if (curr_MIDI_val != knobs[i].value) {
 				knobs[i].value = curr_MIDI_val;
 				ssd1306_WriteKnob(&hi2c1, &knobs[i]);
-
+				if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
 				if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
 			}
 		}
@@ -183,7 +190,8 @@ int main(void) {
 		/* USER CODE BEGIN 3 */
 	}
 
-	free(knobs[3].sub_labels);
+	for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++)
+	    free(knobs[i].sub_labels);
 	/* USER CODE END 3 */
 }
 

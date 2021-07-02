@@ -26,7 +26,6 @@ Drivers/STM32F4xx_HAL_Driver/Src \
 Middlewares/ST/STM32_USB_Device_Library/Class/AUDIO/Src \
 Middlewares/ST/STM32_USB_Device_Library/Class/MIDI/Src \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src \
-SSD1306/Src \
 USB_DEVICE/App \
 USB_DEVICE/Target \
 

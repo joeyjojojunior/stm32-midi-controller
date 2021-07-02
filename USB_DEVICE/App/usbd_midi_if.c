@@ -8,7 +8,7 @@ USBD_Midi_ItfTypeDef USBD_Midi_fops = {
 };
 
 static int8_t Midi_Receive(uint8_t *msg, uint32_t len) {
-
+/*
 	uint8_t chan = msg[1] & 0xf;
 	uint8_t msgtype = msg[1] & 0xf0;
 	uint8_t b1 =  msg[2];
@@ -37,6 +37,6 @@ static int8_t Midi_Receive(uint8_t *msg, uint32_t len) {
 	default:
 		break;
 	}
-
+*/
 	return 0;
 }
