@@ -169,11 +169,9 @@ int main(void) {
 
 		for (int i = 0; i < 4; i++) {
 			adcAveraged[i] = ADC_DMA_Average(i);
-
-			uint8_t last_MIDI_val = knobs[i].value;
 			uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
 
-			if (curr_MIDI_val != last_MIDI_val) {
+			if (curr_MIDI_val != knobs[i].value) {
 				knobs[i].value = curr_MIDI_val;
 				ssd1306_WriteKnob(&hi2c1, &knobs[i]);
 

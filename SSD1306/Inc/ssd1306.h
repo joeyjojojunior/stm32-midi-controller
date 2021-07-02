@@ -72,4 +72,5 @@ void ssd1306_SetCursor(uint8_t x, uint8_t y);
 void ssd1306_InvertColors(void);
 void ssd1306_Select(I2C_HandleTypeDef *hi2c, Knob *k);
 void i2c_Select(I2C_HandleTypeDef *hi2c, uint8_t mux_addr, uint8_t i);
+void update_init_indicator(Knob *k, char *s);
 #endif  // _SSD1306_H
