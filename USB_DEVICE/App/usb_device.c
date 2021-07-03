@@ -24,6 +24,8 @@
 #include "usb_device.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
+#include "usbd_audio.h"
+#include "usbd_audio_if.h"
 
 /* USER CODE BEGIN Includes */
 #include "usbd_midi.h"
@@ -105,16 +107,18 @@ void MX_USB_Send_Midi(uint8_t channel, uint8_t cc, uint8_t value) {
 }
 /* USER CODE END 1 */
 
-/* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
+/**
+  * Init USB device Library, add supported class and start the library
+  * @retval None
+  */
 
-/* USER CODE END USB_DEVICE_Init_PostTreatment */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

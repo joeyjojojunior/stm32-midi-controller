@@ -26,7 +26,7 @@ uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c, Knob *k) {
     // Init LCD
     status += ssd1306_WriteCommand(hi2c, 0xAE);   // Display off
     status += ssd1306_WriteCommand(hi2c, 0x20);   // Set Memory Addressing Mode
-    status += ssd1306_WriteCommand(hi2c, 0x10);   // 00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
+    status += ssd1306_WriteCommand(hi2c, 0x10); // 00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
     status += ssd1306_WriteCommand(hi2c, 0xB0);   // Set Page Start Address for Page Addressing Mode,0-7
     status += ssd1306_WriteCommand(hi2c, 0xC8);   // Set COM Output Scan Direction
     status += ssd1306_WriteCommand(hi2c, 0x00);   // Set low column address
@@ -101,7 +101,7 @@ void ssd1306_UpdateScreen(I2C_HandleTypeDef *hi2c) {
 }
 
 // Write a knob's values to the screen
-void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
+void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k, uint16_t adc) {
     ssd1306_Select(hi2c, k);
     ssd1306_Fill(Black);
 
@@ -141,7 +141,7 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
 
     // If the max number of values is restricted, we want to use
     // sub labels for each choice (e.g. osc. wave selection)
-    uint8_t sl_index = (k->max_values < 128) ? k->value: 0;
+    uint8_t sl_index = (k->max_values < 128) ? k->value : 0;
     len_label = strlen(k->sub_labels[sl_index]);
     x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
     if (len_label % 2 != 0) x += 5;
@@ -254,29 +254,29 @@ char* update_init_indicator(Knob *k) {
     int8_t init_diff = KnobMap(k, k->init_value, 127) - KnobMap(k, k->value, 127);
     uint8_t init_pct = (abs(init_diff) / 127.0f) * 100;
 
-    if (init_diff == 0)    return  "       @       ";
+    if (init_diff == 0) return "       @       ";
 
     if (init_pct < 15) {
-        if (init_diff > 0) return  "      >        ";
-        else               return  "        <      ";
+        if (init_diff > 0) return "      >        ";
+        else return "        <      ";
     } else if (init_pct >= 15 && init_pct < 30) {
-        if (init_diff > 0) return  "     >>        ";
-        else               return  "        <<     ";
+        if (init_diff > 0) return "     >>        ";
+        else return "        <<     ";
     } else if (init_pct >= 30 && init_pct < 45) {
-        if (init_diff > 0) return  "    >>>        ";
-        else               return  "        <<<    ";
+        if (init_diff > 0) return "    >>>        ";
+        else return "        <<<    ";
     } else if (init_pct >= 45 && init_pct < 61) {
-        if (init_diff > 0) return  "   >>>>        ";
-        else               return  "        <<<<   ";
+        if (init_diff > 0) return "   >>>>        ";
+        else return "        <<<<   ";
     } else if (init_pct >= 61 && init_pct < 77) {
-        if (init_diff > 0) return  "  >>>>>        ";
-        else               return  "        <<<<<  ";
+        if (init_diff > 0) return "  >>>>>        ";
+        else return "        <<<<<  ";
     } else if (init_pct >= 77 && init_pct < 93) {
-        if (init_diff > 0) return  " >>>>>>        ";
-        else               return  "        <<<<<< ";
+        if (init_diff > 0) return " >>>>>>        ";
+        else return "        <<<<<< ";
     } else if (init_pct >= 93) {
-        if (init_diff > 0) return  ">>>>>>>        ";
-        else               return  "        <<<<<<<";
+        if (init_diff > 0) return ">>>>>>>        ";
+        else return "        <<<<<<<";
     } else {
         return " ";
     }

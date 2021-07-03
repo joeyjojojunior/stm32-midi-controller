@@ -76,7 +76,7 @@
 
 /** USB Device initialization function. */
 void MX_USB_DEVICE_Init(void);
-void MX_USB_Send_Midi(uint8_t channel, uint8_t cc, uint8_t value);
+
 /*
  * -- Insert functions declaration here --
  */

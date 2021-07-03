@@ -1,2 +1,2 @@
-usb_device.c:57:6:MX_USB_DEVICE_Init	8	static
-usb_device.c:81:6:MX_USB_Send_Midi	24	static
+usb_device.c:59:6:MX_USB_DEVICE_Init	8	static
+usb_device.c:83:6:MX_USB_Send_Midi	24	static
