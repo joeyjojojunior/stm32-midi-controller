@@ -36,9 +36,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define NUM_KNOBS 4
-#define NUM_ADC_SAMPLES 32
+#define NUM_ADC_SAMPLES 16
 #define NUM_ADC_CHANNELS 4
-#define EMA_A 0.7
+#define EMA_A 0.5
 #define UPPER_BOUND_ADC 250
 #define MIDI_MAX 127
 /* USER CODE END PD */
@@ -57,7 +57,8 @@ RTC_HandleTypeDef hrtc;
 SD_HandleTypeDef hsd;
 
 /* USER CODE BEGIN PV */
-uint16_t adcBuf[NUM_ADC_SAMPLES] = { 0 };
+//uint16_t adcBuf[NUM_ADC_SAMPLES] = { 0 };
+//uint16_t adcBuf[NUM_ADC_SAMPLES * NUM_ADC_CHANNELS] = { 0 };
 uint16_t adcAveraged[4] = { 0 };
 uint32_t adcChannels[4] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
 /* USER CODE END PV */
@@ -70,7 +71,6 @@ static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-uint16_t ADC_DMA_average(int channel);
 void MIDI_Send(Knob *k, uint8_t value);
 uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value);
 void ADC_Select(uint8_t channel);
@@ -78,36 +78,44 @@ void ADC_Select(uint8_t channel);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint16_t adc_Averaged_Read(uint8_t channel) {
-    if (channel >= NUM_ADC_CHANNELS) return 1;
+// Polls each channel NUM_ADC_SAMPLES times and saves the average ADC reading
+void ADC_Read_Knobs() {
+    for (uint8_t channel = 0; channel < NUM_ADC_CHANNELS; channel++) {
+        uint16_t adcBuf[NUM_ADC_SAMPLES];
 
-    ADC_ChannelConfTypeDef sConfig = { 0 };
-    sConfig.Channel = adcChannels[channel];
-    sConfig.Rank = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-    if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
-        Error_Handler();
+        // Select channel
+        ADC_ChannelConfTypeDef sConfig = { 0 };
+        sConfig.Channel = adcChannels[channel];
+        sConfig.Rank = 1;
+        sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+        if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+            Error_Handler();
+        }
+
+        // Sample the channel NUM_ADC_SAMPLES times
+        for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
+            HAL_ADC_Start(&hadc1);
+            HAL_ADC_PollForConversion(&hadc1, 1000);
+            adcBuf[i] = HAL_ADC_GetValue(&hadc1);
+            HAL_ADC_Stop(&hadc1);
+        }
+
+        // Calculate average of all samples for this channel
+        uint16_t adc_sum = 0;
+        for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
+            adc_sum += adcBuf[i];
+        }
+
+        adcAveraged[channel] = adc_sum / NUM_ADC_SAMPLES;
     }
-
-    for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
-        HAL_ADC_Start(&hadc1);
-        HAL_ADC_PollForConversion(&hadc1, 1000);
-        adcBuf[i] = HAL_ADC_GetValue(&hadc1);
-        HAL_ADC_Stop(&hadc1);
-    }
-
-    uint16_t adc_sum = 0;
-
-    for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++)
-        adc_sum += adcBuf[i];
-
-    return adc_sum / NUM_ADC_SAMPLES;
 }
 
+// Sends a CC message for knob k with the specified value
 void MIDI_Send(Knob *k, uint8_t value) {
     MX_USB_Send_Midi(k->channel, k->cc, KnobMap(k, value, k->max_range));
 }
 
+// Scales an ADC value from (0, 255) to (0, k->max_values) an applies EMA filter
 uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value) {
     float midi_scale_factor = 1.0 * (k->max_values) / UPPER_BOUND_ADC;
     return MIN(EMA_A * midi_scale_factor * adc_value + (1 - EMA_A) * k->value, k->max_range);
@@ -188,10 +196,10 @@ int main(void) {
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
-        for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
-            adcAveraged[i] = adc_Averaged_Read(i);
+        ADC_Read_Knobs();
 
-            uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcBuf[i]);
+        for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
+            uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
 
             if (curr_MIDI_val != knobs[i].value) {
                 knobs[i].value = curr_MIDI_val;
@@ -202,7 +210,6 @@ int main(void) {
 
         }
         /* USER CODE END WHILE */
-
         /* USER CODE BEGIN 3 */
     }
 
@@ -319,7 +326,7 @@ static void MX_I2C1_Init(void) {
 
     /* USER CODE END I2C1_Init 1 */
     hi2c1.Instance = I2C1;
-    hi2c1.Init.ClockSpeed = 800000;
+    hi2c1.Init.ClockSpeed = 900000;
     hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
     hi2c1.Init.OwnAddress1 = 0;
     hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
