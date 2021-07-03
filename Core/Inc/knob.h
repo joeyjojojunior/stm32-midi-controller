@@ -7,6 +7,7 @@
 #define INC_KNOB_H_
 
 #define MAX_LABEL_CHARS 14
+#define MIDI_MAX 127
 
 typedef struct Knob {
 	uint8_t init_value;

@@ -120,30 +120,34 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k, uint16_t adc) {
     ssd1306_SetCursor(0, 0);
     ssd1306_WriteString(channel_string, NumFont_5x7, White);
 
-    ssd1306_SetCursor(0, 8);
+    ssd1306_SetCursor(0, NumFont_5x7.FontHeight + 1);
     ssd1306_WriteString(cc_string, NumFont_5x7, White);
 
-    ssd1306_SetCursor((SSD1306_WIDTH - strlen(init_indicator_string) * NumFont_5x7.FontWidth) / 2, 4);
+    ssd1306_SetCursor((SSD1306_WIDTH - strlen(init_indicator_string) * NumFont_5x7.FontWidth) / 2, (NumFont_5x7.FontHeight + 1) / 2);
     ssd1306_WriteString(init_indicator_string, NumFont_5x7, White);
 
-    ssd1306_SetCursor(SSD1306_WIDTH - sizeof(value_string) / sizeof(value_string[0]) * NumFont_5x7.FontWidth - 1, 4);
+    ssd1306_SetCursor(SSD1306_WIDTH - sizeof(value_string) / sizeof(value_string[0]) * NumFont_5x7.FontWidth - 1, (NumFont_5x7.FontHeight + 1) / 2);
     ssd1306_WriteString(value_string, NumFont_5x7, White);
 
     uint8_t len_label = 0;
     uint8_t x = 0;
+    uint8_t y = 0;
+    uint8_t y_remaining = SSD1306_WIDTH - (NumFont_5x7.FontHeight + 1);
 
     // Draw main label
     len_label = strlen(k->label);
     x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
+    y = (float) y_remaining / 3;
     if (len_label % 2 != 0) x += 5;
     ssd1306_SetCursor(x, 16);
     ssd1306_WriteString(k->label, Font_10x18, White);
 
     // If the max number of values is restricted, we want to use
     // sub labels for each choice (e.g. osc. wave selection)
-    uint8_t sl_index = (k->max_values < 128) ? k->value : 0;
+    uint8_t sl_index = (k->max_values < MIDI_MAX + 1) ? k->value : 0;
     len_label = strlen(k->sub_labels[sl_index]);
     x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
+    y = (float) 2 * y_remaining / 3;
     if (len_label % 2 != 0) x += 5;
     ssd1306_SetCursor(x, 40);
     ssd1306_WriteString(k->sub_labels[sl_index], Font_10x18, White);
@@ -251,8 +255,8 @@ void i2c_Select(I2C_HandleTypeDef *hi2c, uint8_t mux_addr, uint8_t i) {
 
 // Update the init value closeness indicator
 char* update_init_indicator(Knob *k) {
-    int8_t init_diff = KnobMap(k, k->init_value, 127) - KnobMap(k, k->value, 127);
-    uint8_t init_pct = (abs(init_diff) / 127.0f) * 100;
+    int8_t init_diff = KnobMap(k, k->init_value, MIDI_MAX) - KnobMap(k, k->value, MIDI_MAX);
+    uint8_t init_pct = 1.0f * abs(init_diff) / MIDI_MAX * 100;
 
     if (init_diff == 0) return "       @       ";
 

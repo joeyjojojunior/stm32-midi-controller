@@ -40,7 +40,6 @@
 #define NUM_ADC_CHANNELS 4
 #define EMA_A 0.5
 #define UPPER_BOUND_ADC 250
-#define MIDI_MAX 127
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -117,7 +116,7 @@ void MIDI_Send(Knob *k, uint8_t value) {
 
 // Scales an ADC value from (0, 255) to (0, k->max_values) an applies EMA filter
 uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value) {
-    float midi_scale_factor = 1.0 * (k->max_values) / UPPER_BOUND_ADC;
+    float midi_scale_factor = 1.0 * k->max_values / UPPER_BOUND_ADC;
     return MIN(EMA_A * midi_scale_factor * adc_value + (1 - EMA_A) * k->value, k->max_range);
 }
 /* USER CODE END 0 */
@@ -130,37 +129,30 @@ int main(void) {
     /* USER CODE BEGIN 1 */
     Knob knobs[4] = { { .init_value = 63, .row = 0, .col = 0, .label = "Cutoff", .channel = 0, .cc = 17, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 1 },
             { .init_value = 127, .row = 0, .col = 1, .label = "Resonance", .channel = 1, .cc = 18, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0 },
-            { .init_value = 3, .row = 1, .col = 0, .label = "Osc 0", .channel = 2, .cc = 19, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0 },
-            { .init_value = 4, .row = 1, .col = 1, .label = "Osc 1", .channel = 3, .cc = 20, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0 } };
+            { .init_value = 3, .row = 1, .col = 0, .label = "Osc 0", .channel = 2, .cc = 19, .value = 0, .max_values = 12, .max_range = 127, .isLocked = 0 },
+            { .init_value = 4, .row = 1, .col = 1, .label = "Osc 1", .channel = 3, .cc = 20, .value = 0, .max_values = 12, .max_range = 11, .isLocked = 0 } };
 
-    /*
-     for (int i = 2; i < 4; i++) {
-     knobs[i].sub_labels = malloc(sizeof(*knobs[i].sub_labels) * (knobs[i].max_values));
-     strncpy(knobs[i].sub_labels[0], "MultiSaw", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[1], "TriWrap", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[2], "Noise", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[3], "Feedback", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[4], "Pulse", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[5], "Saw", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[6], "Triangle", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[7], "Pulse5", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[8], "Pulse6", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[9], "Pulse7", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[10], "Pulse8", MAX_LABEL_CHARS);
-     strncpy(knobs[i].sub_labels[11], "Pulse9", MAX_LABEL_CHARS);
-     }*/
+    for (int i = 2; i < 4; i++) {
+        knobs[i].sub_labels = malloc(sizeof(*knobs[i].sub_labels) * (knobs[i].max_values));
+        strncpy(knobs[i].sub_labels[0], "MultiSaw", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[1], "TriWrap", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[2], "Noise", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[3], "Feedback", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[4], "Pulse", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[5], "Saw", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[6], "Triangle", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[7], "Pulse5", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[8], "Pulse6", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[9], "Pulse7", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[10], "Pulse8", MAX_LABEL_CHARS);
+        strncpy(knobs[i].sub_labels[11], "Pulse9", MAX_LABEL_CHARS);
+    }
 
     knobs[0].sub_labels = malloc(sizeof(*knobs[0].sub_labels));
     strncpy(knobs[0].sub_labels[0], "Filter 1", MAX_LABEL_CHARS);
 
     knobs[1].sub_labels = malloc(sizeof(*knobs[1].sub_labels));
     strncpy(knobs[1].sub_labels[0], "Filter 2", MAX_LABEL_CHARS);
-
-    knobs[2].sub_labels = malloc(sizeof(*knobs[2].sub_labels));
-    strncpy(knobs[2].sub_labels[0], "Filter 3", MAX_LABEL_CHARS);
-
-    knobs[3].sub_labels = malloc(sizeof(*knobs[3].sub_labels));
-    strncpy(knobs[3].sub_labels[0], "Filter 4", MAX_LABEL_CHARS);
 
     /* USER CODE END 1 */
 
