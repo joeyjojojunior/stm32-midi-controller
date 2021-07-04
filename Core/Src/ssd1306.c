@@ -129,17 +129,20 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
     ssd1306_SetCursor(SSD1306_WIDTH - sizeof(value_string) / sizeof(value_string[0]) * NumFont_5x7.FontWidth - 1, (NumFont_5x7.FontHeight + 1) / 2);
     ssd1306_WriteString(value_string, NumFont_5x7, White);
 
+    for (uint8_t i = 0; i < SSD1306_WIDTH; i++) {
+        ssd1306_DrawPixel(i, SSD1306.CurrentY + NumFont_5x7.FontHeight + 4, White);
+    }
+
     uint8_t len_label = 0;
     uint8_t x = 0;
     uint8_t y = 0;
-    uint8_t y_remaining = SSD1306_WIDTH - (NumFont_5x7.FontHeight + 1);
+    uint8_t y_remaining = SSD1306_HEIGHT - 2 * NumFont_5x7.FontHeight;
 
     // Draw main label
     len_label = strlen(k->label);
     x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
-    y = (float) y_remaining / 3;
-    if (len_label % 2 != 0) x += 5;
-    ssd1306_SetCursor(x, 16);
+    y = (float) y_remaining / 3 + (Font_10x18.FontHeight / 4);
+    ssd1306_SetCursor(x, y);
     ssd1306_WriteString(k->label, Font_10x18, White);
 
     // If the max number of values is restricted, we want to use
@@ -147,9 +150,8 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
     uint8_t sl_index = (k->max_values < MIDI_MAX + 1) ? k->value : 0;
     len_label = strlen(k->sub_labels[sl_index]);
     x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
-    y = (float) 2 * y_remaining / 3;
-    if (len_label % 2 != 0) x += 5;
-    ssd1306_SetCursor(x, 40);
+    y = SSD1306_HEIGHT - Font_10x18.FontHeight - 1;
+    ssd1306_SetCursor(x, y);
     ssd1306_WriteString(k->sub_labels[sl_index], Font_10x18, White);
 
     ssd1306_UpdateScreen(hi2c);
