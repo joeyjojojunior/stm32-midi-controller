@@ -35,6 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define GPIO_PORT_AMUX GPIOB
 #define NUM_KNOBS 4
 #define NUM_ADC_SAMPLES 16
 #define NUM_ADC_CHANNELS 4
@@ -58,9 +59,7 @@ SD_HandleTypeDef hsd;
 /* USER CODE BEGIN PV */
 uint16_t adcAveraged[4] = { 0 };
 uint32_t adcChannels[4] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
-
-uint64_t last_debounce_time = 0;
-uint64_t debounceDelay = 50;
+const uint16_t AMUXPins[4] = { AMUX_S0_Pin, AMUX_S1_Pin, AMUX_S2_Pin, AMUX_S3_Pin };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -79,9 +78,24 @@ void ADC_Select(uint8_t channel);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 // Polls each channel NUM_ADC_SAMPLES times and saves the average ADC reading
+
+void ADC_Mux_Select(uint8_t c) {
+    if (c > NUM_ADC_CHANNELS) return;
+
+    for (int i = 0; i < NUM_ADC_CHANNELS; i++) {
+        if (c & (1 << i)) {
+            HAL_GPIO_WritePin(GPIO_PORT_AMUX, AMUXPins[i], GPIO_PIN_SET);
+        } else {
+            HAL_GPIO_WritePin(GPIO_PORT_AMUX, AMUXPins[i], GPIO_PIN_RESET);
+        }
+    }
+}
+
 void ADC_Read_Knobs() {
     for (uint8_t channel = 0; channel < NUM_ADC_CHANNELS; channel++) {
         uint16_t adcBuf[NUM_ADC_SAMPLES];
+
+        ADC_Mux_Select(channel);
 
         // Select channel
         ADC_ChannelConfTypeDef sConfig = { 0 };
