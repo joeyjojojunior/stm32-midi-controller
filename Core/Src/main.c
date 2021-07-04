@@ -58,7 +58,9 @@ SD_HandleTypeDef hsd;
 /* USER CODE BEGIN PV */
 uint16_t adcAveraged[4] = { 0 };
 uint32_t adcChannels[4] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
-uint16_t adcBuf[NUM_ADC_SAMPLES];
+
+uint64_t last_debounce_time = 0;
+uint64_t debounceDelay = 50;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -79,7 +81,7 @@ void ADC_Select(uint8_t channel);
 // Polls each channel NUM_ADC_SAMPLES times and saves the average ADC reading
 void ADC_Read_Knobs() {
     for (uint8_t channel = 0; channel < NUM_ADC_CHANNELS; channel++) {
-
+        uint16_t adcBuf[NUM_ADC_SAMPLES];
 
         // Select channel
         ADC_ChannelConfTypeDef sConfig = { 0 };
@@ -90,15 +92,15 @@ void ADC_Read_Knobs() {
             Error_Handler();
         }
 
+        // Sample the channel NUM_ADC_SAMPLES times to the buffer
         HAL_ADC_Start(&hadc1);
-        // Sample the channel NUM_ADC_SAMPLES times
         for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
             HAL_ADC_PollForConversion(&hadc1, 1000);
             adcBuf[i] = HAL_ADC_GetValue(&hadc1);
         }
         HAL_ADC_Stop(&hadc1);
 
-        // Calculate average of all samples for this channel
+        // Calculate average of all samples for the channel
         uint16_t adc_sum = 0;
         for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
             adc_sum += adcBuf[i];
@@ -171,8 +173,8 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
   MX_RTC_Init();
+  MX_GPIO_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_USB_DEVICE_Init();
@@ -181,13 +183,22 @@ int main(void)
     // Init displays
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         ssd1306_Init(&hi2c1, &knobs[i]);
-        ssd1306_WriteKnob(&hi2c1, &knobs[i], 0);
+        ssd1306_WriteKnob(&hi2c1, &knobs[i]);
     }
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+    SystemCoreClockUpdate();
+    SysTick_Config(SystemCoreClock/40);
+
     while (1) {
+
+
+            //    HAL_GPIO_TogglePin(LED_1_GPIO_Port, LED_1_Pin);
+            //} else {
+            //    HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+
         ADC_Read_Knobs();
 
         for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
@@ -195,11 +206,10 @@ int main(void)
 
             if (curr_MIDI_val != knobs[i].value) {
                 knobs[i].value = curr_MIDI_val;
-                ssd1306_WriteKnob(&hi2c1, &knobs[i], adcAveraged[i]);
+                ssd1306_WriteKnob(&hi2c1, &knobs[i]);
                 if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
                 if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
             }
-
         }
     /* USER CODE END WHILE */
 
@@ -328,7 +338,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
+  hi2c1.Init.ClockSpeed = 800000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -419,16 +429,40 @@ static void MX_SDIO_SD_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, LED_1_Pin|LED_2_Pin|LED_3_Pin|LED_4_Pin
+                          |LED_5_Pin|LED_6_Pin|AMUX_S0_Pin|AMUX_S1_Pin
+                          |AMUX_S2_Pin|AMUX_S3_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : Button_1_Pin Button_2_Pin Button_3_Pin Button_4_Pin
+                           Button_5_Pin Button_6_Pin */
+  GPIO_InitStruct.Pin = Button_1_Pin|Button_2_Pin|Button_3_Pin|Button_4_Pin
+                          |Button_5_Pin|Button_6_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LED_1_Pin LED_2_Pin LED_3_Pin LED_4_Pin
+                           LED_5_Pin LED_6_Pin AMUX_S0_Pin AMUX_S1_Pin
+                           AMUX_S2_Pin AMUX_S3_Pin */
+  GPIO_InitStruct.Pin = LED_1_Pin|LED_2_Pin|LED_3_Pin|LED_4_Pin
+                          |LED_5_Pin|LED_6_Pin|AMUX_S0_Pin|AMUX_S1_Pin
+                          |AMUX_S2_Pin|AMUX_S3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**

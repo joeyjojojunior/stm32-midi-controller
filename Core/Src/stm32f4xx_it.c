@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    stm32f4xx_it.c
-  * @brief   Interrupt Service Routines.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    stm32f4xx_it.c
+ * @brief   Interrupt Service Routines.
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -32,7 +32,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define NUM_BUTTONS 6
+#define GPIO_PORT_BUTTONS GPIOA
+#define GPIO_PORT_LEDS GPIOB
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -42,7 +44,10 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+uint8_t btnStates[NUM_BUTTONS] = { GPIO_PIN_SET };
+uint8_t btnStatesLast[NUM_BUTTONS] = { GPIO_PIN_SET };
+uint16_t btnPins[] = { Button_1_Pin, Button_2_Pin, Button_3_Pin, Button_4_Pin, Button_5_Pin, Button_6_Pin };
+uint16_t LEDPins[] = { LED_1_Pin, LED_2_Pin, LED_3_Pin, LED_4_Pin, LED_5_Pin, LED_6_Pin };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,9 +78,9 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
-  {
-  }
+    while (1)
+    {
+    }
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -184,7 +189,19 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
+    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+        uint8_t reading = HAL_GPIO_ReadPin(GPIO_PORT_BUTTONS, btnPins[i]);
 
+        if (reading == btnStatesLast[i] && reading != btnStates[i]) {
+            btnStates[i] = reading;
+
+            if (btnStates[i] == GPIO_PIN_RESET) {
+                HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[i]);
+            }
+        }
+
+        btnStatesLast[i] = reading;
+    }
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */

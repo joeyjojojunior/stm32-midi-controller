@@ -101,7 +101,7 @@ void ssd1306_UpdateScreen(I2C_HandleTypeDef *hi2c) {
 }
 
 // Write a knob's values to the screen
-void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k, uint16_t adc) {
+void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
     ssd1306_Select(hi2c, k);
     ssd1306_Fill(Black);
 
