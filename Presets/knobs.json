@@ -1,0 +1,65 @@
+[
+    {
+        "row": 0,
+        "col": 0,
+        "label": "Cutoff",
+        "sub_labels": [
+            "Filter 1"
+        ],
+        "channel": 1,
+        "cc": 17,
+        "init_value": 64,
+        "max_values": 128,
+        "max_range": 127,
+        "isLocked": 1 
+    },
+    {
+        "row": 0,
+        "col": 1,
+        "label": "Resonance",
+        "sub_labels": [
+            "Filter 2"
+        ],
+        "channel": 1,
+        "cc": 18,
+        "init_value": 79,
+        "max_values": 128,
+        "max_range": 127,
+        "isLocked": 0
+    },
+    {
+        "row": 1,
+        "col": 0,
+        "label": "Osc 1",
+        "sub_labels": [
+            "Saw",
+            "Square",
+            "Sine",
+            "Pulse"
+        ],
+        "channel": 1,
+        "cc": 19,
+        "init_value": 0,
+        "max_values": 4,
+        "max_range": 127,
+        "isLocked": 0
+    },
+    {
+        "row": 1,
+        "col": 1,
+        "label": "Osc 2",
+        "sub_labels": [
+            "Saw",
+            "Square",
+            "Triangle",
+            "Noise",
+            "Fart"
+        ],
+        "channel": 1,
+        "cc": 20,
+        "init_value": 11,
+        "max_values": 5,
+        "max_range": 4,
+        "isLocked": 0
+    }
+]

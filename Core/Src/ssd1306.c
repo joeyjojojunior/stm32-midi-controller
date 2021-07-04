@@ -26,7 +26,7 @@ uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c, Knob *k) {
     // Init LCD
     status += ssd1306_WriteCommand(hi2c, 0xAE);   // Display off
     status += ssd1306_WriteCommand(hi2c, 0x20);   // Set Memory Addressing Mode
-    status += ssd1306_WriteCommand(hi2c, 0x10); // 00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
+    status += ssd1306_WriteCommand(hi2c, 0x10);   // 00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
     status += ssd1306_WriteCommand(hi2c, 0xB0);   // Set Page Start Address for Page Addressing Mode,0-7
     status += ssd1306_WriteCommand(hi2c, 0xC8);   // Set COM Output Scan Direction
     status += ssd1306_WriteCommand(hi2c, 0x00);   // Set low column address
@@ -65,13 +65,10 @@ uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c, Knob *k) {
         return 1;
     }
 
-    // Clear screen
     ssd1306_Fill(Black);
-
-    // Flush buffer to screen
+    ssd1306_AdjustBrightness(hi2c, 0x7F);
     ssd1306_UpdateScreen(hi2c);
 
-    // Set default values for screen object
     SSD1306.CurrentX = 0;
     SSD1306.CurrentY = 0;
 
@@ -239,6 +236,14 @@ void ssd1306_InvertColors(void) {
 void ssd1306_SetCursor(uint8_t x, uint8_t y) {
     SSD1306.CurrentX = x;
     SSD1306.CurrentY = y;
+}
+
+// Adjust brightness
+void ssd1306_AdjustBrightness(I2C_HandleTypeDef *hi2c, uint8_t brightness) {
+    uint8_t contrast_cmd = 0x81;
+    uint8_t contrast_level = brightness;
+    HAL_I2C_Mem_Write(hi2c, SSD1306_I2C_ADDR, 0x00, 1, &contrast_cmd, 1, 10);
+    HAL_I2C_Mem_Write(hi2c, SSD1306_I2C_ADDR, 0x00, 1, &contrast_level, 1, 10);
 }
 
 // Select a display

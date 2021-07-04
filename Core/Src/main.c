@@ -23,10 +23,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ssd1306.h"
-#include "knob.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include "ssd1306.h"
+#include "knob.h"
+#include "preset.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -142,7 +143,10 @@ uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value) {
  */
 int main(void)
 {
+    //Knob knobs[NUM_KNOBS];
+    //Load_Preset(&knobs, "C:/Users/Igor/STM32CubeIDE/workspace_1.4.0/BPMidiCtrl/Presets/knobs.json");
     /* USER CODE BEGIN 1 */
+
     Knob knobs[4] = { { .init_value = 63, .row = 0, .col = 0, .label = "Cutoff", .channel = 0, .cc = 17, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 1 },
             { .init_value = 127, .row = 0, .col = 1, .label = "Resonance", .channel = 1, .cc = 18, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0 },
             { .init_value = 5, .row = 1, .col = 0, .label = "Osc 0", .channel = 2, .cc = 19, .value = 0, .max_values = 12, .max_range = 127, .isLocked = 1 },
@@ -169,6 +173,7 @@ int main(void)
 
     knobs[1].sub_labels = malloc(sizeof(*knobs[1].sub_labels));
     strncpy(knobs[1].sub_labels[0], "Filter 2", MAX_LABEL_CHARS);
+
 
     /* USER CODE END 1 */
 

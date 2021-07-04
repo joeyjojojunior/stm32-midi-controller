@@ -10,13 +10,13 @@
 #define MIDI_MAX 127
 
 typedef struct Knob {
-	uint8_t init_value;
 	uint8_t row;
 	uint8_t col;
 	char label[MAX_LABEL_CHARS + 1];
 	char (*sub_labels)[MAX_LABEL_CHARS+1];
 	uint8_t channel;
 	uint8_t cc;
+    uint8_t init_value;
 	uint8_t value;
 	uint8_t max_values;
 	uint8_t max_range;
