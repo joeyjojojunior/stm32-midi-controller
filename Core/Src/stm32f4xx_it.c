@@ -33,7 +33,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define NUM_BUTTONS 6
-#define GPIO_PORT_BUTTONS GPIOA
+#define GPIO_PORT_BUTTONS_1TO5 GPIOA
+#define GPIO_PORT_BUTTON_6 Button_6_GPIO_Port
 #define GPIO_PORT_LEDS GPIOB
 /* USER CODE END PD */
 
@@ -190,7 +191,8 @@ void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
     for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
-        uint8_t reading = HAL_GPIO_ReadPin(GPIO_PORT_BUTTONS, btnPins[i]);
+        GPIO_TypeDef *t = (i == NUM_BUTTONS - 1) ? GPIO_PORT_BUTTON_6 : GPIO_PORT_BUTTONS_1TO5;
+        uint8_t reading = HAL_GPIO_ReadPin(t, btnPins[i]);
 
         if (reading == btnStatesLast[i] && reading != btnStates[i]) {
             btnStates[i] = reading;
