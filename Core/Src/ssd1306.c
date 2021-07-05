@@ -17,7 +17,6 @@ static uint8_t ssd1306_WriteCommand(I2C_HandleTypeDef *hi2c, uint8_t command) {
 //  Initialize the oled screen
 uint8_t ssd1306_Init(I2C_HandleTypeDef *hi2c, Knob *k) {
     // Wait for the screen to boot
-    HAL_Delay(100);
     int status = 0;
 
     // Select the screen to init
@@ -108,7 +107,7 @@ void ssd1306_WriteKnob(I2C_HandleTypeDef *hi2c, Knob *k) {
     char init_indicator_string[16] = "       @       ";
     char value_string[4];
 
-    snprintf(channel_string, sizeof(channel_string) / sizeof(channel_string[0]), "%.2d", (int) k->channel + 1);
+    snprintf(channel_string, sizeof(channel_string) / sizeof(channel_string[0]), "%.2d", (int) k->channel);
     snprintf(cc_string, sizeof(cc_string) / sizeof(cc_string[0]), "%.3d", (int) k->cc);
     snprintf(init_indicator_string, strlen(init_indicator_string), "%s", update_init_indicator(k));
     snprintf(value_string, sizeof(value_string) / sizeof(value_string[0]), "%.3d",
