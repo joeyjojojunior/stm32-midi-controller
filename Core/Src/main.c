@@ -71,14 +71,32 @@ static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
+void SD_Toggle();
+void SD_Enable();
+void SD_Disable();
+void ADC_Read_Knobs();
+void ADC_Mux_Select(uint8_t c) ;
 void MIDI_Send(Knob *k, uint8_t value);
 uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value);
-void ADC_Select(uint8_t channel);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 // Polls each channel NUM_ADC_SAMPLES times and saves the average ADC reading
+
+void SD_Toggle() {
+    (hsd.State != HAL_SD_STATE_READY) ? SD_Enable() : SD_Disable();
+}
+
+void SD_Enable() {
+    __HAL_SD_ENABLE(hsd);
+    hsd.State = HAL_SD_STATE_READY;
+}
+
+void SD_Disable() {
+    __HAL_SD_DISABLE(hsd);
+    hsd.State = HAL_SD_STATE_RESET;
+}
 
 void ADC_Mux_Select(uint8_t c) {
     if (c > NUM_ADC_CHANNELS) return;
@@ -144,7 +162,6 @@ uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
     Knob knobs[4] = { { .init_value = 63, .row = 0, .col = 0, .label = "Cutoff", .channel = 0, .cc = 17, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 1 },
             { .init_value = 127, .row = 0, .col = 1, .label = "Resonance", .channel = 1, .cc = 18, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0 },
             { .init_value = 5, .row = 1, .col = 0, .label = "Osc 0", .channel = 2, .cc = 19, .value = 0, .max_values = 12, .max_range = 127, .isLocked = 1 },
@@ -195,7 +212,7 @@ int main(void)
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_USB_DEVICE_Init();
-  //MX_SDIO_SD_Init();
+  MX_SDIO_SD_Init();
   /* USER CODE BEGIN 2 */
     // Init displays
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
@@ -208,6 +225,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / 40);
+    SD_Disable();
 
     while (1) {
 
@@ -500,9 +518,11 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
     /* User can add his own implementation to report the HAL error return state */
+
     __disable_irq();
     while (1) {
     }
+
   /* USER CODE END Error_Handler_Debug */
 }
 
