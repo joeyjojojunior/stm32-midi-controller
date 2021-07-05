@@ -1,2 +1,2 @@
-knob.c:8:6:Knob_Free	16	static
-knob.c:14:9:Knob_Map	16	static
+knob.c:7:6:Knob_Free	16	static
+knob.c:12:9:Knob_Map	16	static

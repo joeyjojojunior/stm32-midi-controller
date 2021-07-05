@@ -65,7 +65,7 @@ uint8_t ssd1306_Init(Knob *k) {
     }
 
     ssd1306_Fill(Black);
-    ssd1306_AdjustBrightness(0x7F);
+    ssd1306_AdjustBrightness(0x63);
     ssd1306_UpdateScreen(&hi2c1);
 
     SSD1306.CurrentX = 0;

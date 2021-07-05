@@ -25,8 +25,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
-#include <stdbool.h>
-
 #include "ssd1306.h"
 #include "knob.h"
 #include "preset.h"
@@ -51,7 +49,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-
 RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
@@ -127,6 +124,28 @@ int main(void)
     while (1) {
         ADC_Read_Knobs();
 
+        if (isMenuActive) {
+            for (uint8_t i = 0; i < NUM_KNOBS; i++) {
+                ssd1306_Select(&knobs[i]);
+                ssd1306_Fill(Black);
+                char presetString[MAX_LABEL_CHARS+1] = "String";
+                uint8_t x = (SSD1306_WIDTH - strlen(presetString) * Font_10x18.FontWidth) / 2;
+                uint8_t y = SSD1306_HEIGHT / 2 -  Font_10x18.FontHeight / 2;
+                ssd1306_SetCursor(x, y);
+
+                ssd1306_WriteString(presetString, Font_10x18, White);
+                ssd1306_UpdateScreen();
+            }
+
+            while (isMenuActive) {
+
+            }
+
+            for (uint8_t i = 0; i < NUM_KNOBS; i++) {
+                ssd1306_WriteKnob(&knobs[i]);
+            }
+        }
+
         for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
             uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
 
@@ -143,8 +162,9 @@ int main(void)
         /* USER CODE BEGIN 3 */
     }
 
-    for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++)
-        free(knobs[i].sub_labels);
+    for (uint8_t i = 0; i < NUM_KNOBS; i++) {
+        Knob_Free(&knobs[i]);
+    }
     /* USER CODE END 3 */
 }
 

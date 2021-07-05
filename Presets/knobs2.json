@@ -1,15 +1,15 @@
 {
-    "name": "Diva",
+    "name": "Shruthi",
     "knobs": [
         {
             "row": 0,
             "col": 0,
-            "label": "Cutoff",
+            "label": "Env 1",
             "sub_labels": [
-                "Filter 1"
+                "Attack"
             ],
             "channel": 1,
-            "cc": 17,
+            "cc": 56,
             "init_value": 64,
             "max_values": 128,
             "max_range": 127,
@@ -18,12 +18,12 @@
         {
             "row": 0,
             "col": 1,
-            "label": "Resonance",
+            "label": "Env 1",
             "sub_labels": [
-                "Filter 2"
+                "Decay"
             ],
             "channel": 1,
-            "cc": 18,
+            "cc": 43,
             "init_value": 79,
             "max_values": 128,
             "max_range": 127,
@@ -32,15 +32,15 @@
         {
             "row": 1,
             "col": 0,
-            "label": "Osc 1",
+            "label": "Filter Type",
             "sub_labels": [
-                "Saw",
-                "Square",
-                "Sine",
-                "Pulse"
+                "LP",
+                "HP",
+                "BP",
+                "Notch"
             ],
             "channel": 1,
-            "cc": 19,
+            "cc": 87,
             "init_value": 0,
             "max_values": 4,
             "max_range": 127,
@@ -49,19 +49,20 @@
         {
             "row": 1,
             "col": 1,
-            "label": "Osc 2",
+            "label": "LFO Sync",
             "sub_labels": [
-                "Saw",
-                "Square",
-                "Triangle",
-                "Noise",
-                "Fart"
+                "1/32",
+                "1/16",
+                "1/8",
+                "1/4",
+                "1/2",
+                "1"
             ],
             "channel": 1,
-            "cc": 20,
+            "cc": 21,
             "init_value": 3,
-            "max_values": 5,
-            "max_range": 4,
+            "max_values": 6,
+            "max_range": 5,
             "isLocked": 0
         }
     ]
