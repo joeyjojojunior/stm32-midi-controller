@@ -391,7 +391,7 @@ HAL_StatusTypeDef HAL_SD_Init(SD_HandleTypeDef *hsd)
   hsd->State = HAL_SD_STATE_READY;
 
   return HAL_OK;
- }
+}
 
 /**
   * @brief  Initializes the SD Card.

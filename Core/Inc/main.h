@@ -29,7 +29,6 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_sd.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -53,11 +52,14 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define Detect_SDIO_Pin GPIO_PIN_14
+#define Detect_SDIO_GPIO_Port GPIOC
 #define Button_6_Pin GPIO_PIN_15
 #define Button_6_GPIO_Port GPIOC
 #define Button_1_Pin GPIO_PIN_4

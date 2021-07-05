@@ -11,7 +11,7 @@
 #include "cJSON.h"
 #include "knob.h"
 
-void Load_Preset(Knob *k, char* filename);
+void Load_Preset(Knob *k, char* buffer);
 char* File_To_String(char* filename);
 void Print_Knob(Knob k);
 
