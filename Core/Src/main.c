@@ -38,7 +38,6 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define GPIO_PORT_AMUX GPIOB
-#define NUM_KNOBS 4
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
 #define EMA_A 0.5

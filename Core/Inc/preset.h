@@ -12,7 +12,5 @@
 #include "knob.h"
 
 void Preset_Load(Knob *k, char* buffer);
-char* File_To_String(char* filename);
-void Print_Knob(Knob k);
 
 #endif /* INC_PRESET_H_ */

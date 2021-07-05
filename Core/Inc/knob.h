@@ -8,6 +8,7 @@
 
 #define MAX_LABEL_CHARS 14
 #define MIDI_MAX 127
+#define NUM_KNOBS 4
 
 typedef struct Knob {
 	uint8_t row;

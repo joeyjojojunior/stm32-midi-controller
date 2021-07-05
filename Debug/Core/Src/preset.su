@@ -1,3 +1,1 @@
-preset.c:3:6:Preset_Load	88	static
-preset.c:47:6:Print_Knob	16	static
-preset.c:71:8:File_To_String	32	static
+preset.c:3:6:Preset_Load	96	static
