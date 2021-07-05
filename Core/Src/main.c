@@ -112,6 +112,7 @@ int main(void)
     /* USER CODE BEGIN WHILE */
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / 40);
+    SD_FetchPresets();
 
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         SD_LoadPreset(knobs, "knobs1.json");
