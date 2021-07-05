@@ -150,7 +150,7 @@ void ssd1306_WriteKnob(Knob *k) {
     ssd1306_SetCursor(x, y);
     ssd1306_WriteString(k->sub_labels[sl_index], Font_10x18, White);
 
-    ssd1306_UpdateScreen(&hi2c1);
+    ssd1306_UpdateScreen();
 }
 
 //  Draw one pixel in the screenbuffer

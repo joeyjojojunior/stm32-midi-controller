@@ -113,7 +113,11 @@ int main(void)
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / 40);
 
-    SD_LoadPreset(knobs, "knobs.json");
+    for (uint8_t i = 0; i < NUM_KNOBS; i++) {
+        SD_LoadPreset(knobs, "knobs1.json");
+    }
+
+    //SD_LoadPreset(knobs, "knobs.json");
 
     // Init displays
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
@@ -125,17 +129,18 @@ int main(void)
         ADC_Read_Knobs();
 
         if (isMenuActive) {
+            SD_FetchPresets();
+
             for (uint8_t i = 0; i < NUM_KNOBS; i++) {
                 ssd1306_Select(&knobs[i]);
                 ssd1306_Fill(Black);
-                char presetString[MAX_LABEL_CHARS+1] = "String";
-                uint8_t x = (SSD1306_WIDTH - strlen(presetString) * Font_10x18.FontWidth) / 2;
+                uint8_t x = (SSD1306_WIDTH - strlen(presets[i]) * Font_10x18.FontWidth) / 2;
                 uint8_t y = SSD1306_HEIGHT / 2 -  Font_10x18.FontHeight / 2;
-                ssd1306_SetCursor(x, y);
-
-                ssd1306_WriteString(presetString, Font_10x18, White);
+                ssd1306_SetCursor(x,y);
+                ssd1306_WriteString(presets[i], Font_10x18, White);
                 ssd1306_UpdateScreen();
             }
+
 
             while (isMenuActive) {
 

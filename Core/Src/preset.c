@@ -1,10 +1,16 @@
 #include "preset.h"
 
+void Preset_GetName(char *file_buffer, char *name_buffer) {
+    cJSON *preset_json = cJSON_Parse(file_buffer);
+    if (preset_json == NULL) return;
+    const cJSON *name = cJSON_GetObjectItemCaseSensitive(preset_json, "name");
+    snprintf(name_buffer, MAX_LABEL_CHARS, "%s", name->valuestring);
+}
+
 void Preset_Load(Knob *knobs, char *buffer) {
     cJSON *preset_json = cJSON_Parse(buffer);
     if (preset_json == NULL) return;
 
-    const cJSON *name = cJSON_GetObjectItemCaseSensitive(preset_json, "name");
     const cJSON *knobs_json = cJSON_GetObjectItemCaseSensitive(preset_json, "knobs");
     const cJSON *knob_json = NULL;
 
