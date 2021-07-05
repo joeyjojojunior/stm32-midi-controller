@@ -2,6 +2,7 @@
  * knob.h
  */
 #include <stdint.h>
+#include <stdlib.h>
 
 #ifndef INC_KNOB_H_
 #define INC_KNOB_H_
@@ -24,6 +25,7 @@ typedef struct Knob {
 	uint8_t isLocked;
 } Knob;
 
-uint8_t KnobMap(Knob *k, uint8_t value, uint8_t m);
+void Knob_Free(Knob *k);
+uint8_t Knob_Map(Knob *k, uint8_t value, uint8_t m);
 
 #endif /* INC_KNOB_H_ */

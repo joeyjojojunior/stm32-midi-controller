@@ -11,6 +11,6 @@
 #include "cJSON.h"
 #include "knob.h"
 
-void Preset_Load(Knob *k, char* buffer);
+void Preset_Load(Knob *knobs, char* buffer);
 
 #endif /* INC_PRESET_H_ */

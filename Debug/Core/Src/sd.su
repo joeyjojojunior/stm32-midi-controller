@@ -1,0 +1,4 @@
+sd.c:9:6:SD_LoadPreset	160	dynamic
+sd.c:27:6:SD_Toggle	8	static
+sd.c:31:6:SD_Enable	4	static
+sd.c:36:6:SD_Disable	4	static

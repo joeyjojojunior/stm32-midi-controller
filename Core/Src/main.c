@@ -26,9 +26,12 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdbool.h>
+
 #include "ssd1306.h"
 #include "knob.h"
 #include "preset.h"
+#include "sd.h"
+#include "midi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,11 +40,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define GPIO_PORT_AMUX GPIOB
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
-#define EMA_A 0.5
-#define UPPER_BOUND_ADC 250
+#define GPIO_PORT_AMUX GPIOB
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,13 +52,10 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
-I2C_HandleTypeDef hi2c1;
-
 RTC_HandleTypeDef hrtc;
 
-SD_HandleTypeDef hsd;
-
 /* USER CODE BEGIN PV */
+Knob knobs[4];
 uint16_t adcAveraged[4] = { 0 };
 uint32_t adcChannels[4] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
 const uint16_t AMUXPins[4] = { AMUX_S0_Pin, AMUX_S1_Pin, AMUX_S2_Pin, AMUX_S3_Pin };
@@ -71,87 +69,12 @@ static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-void SD_Toggle();
-void SD_Enable();
-void SD_Disable();
 void ADC_Read_Knobs();
 void ADC_Mux_Select(uint8_t c);
-void MIDI_Send(Knob *k, uint8_t value);
-uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-// Polls each channel NUM_ADC_SAMPLES times and saves the average ADC reading
-void SD_Toggle() {
-    hsd.State != HAL_SD_STATE_READY ? SD_Enable() : SD_Disable();
-}
-
-void SD_Enable() {
-    __HAL_SD_ENABLE(hsd);
-    hsd.State = HAL_SD_STATE_READY;
-}
-
-void SD_Disable() {
-    __HAL_SD_DISABLE(hsd);
-    hsd.State = HAL_SD_STATE_RESET;
-}
-
-void ADC_Mux_Select(uint8_t c) {
-    if (c > NUM_ADC_CHANNELS) return;
-
-    for (int i = 0; i < NUM_ADC_CHANNELS; i++) {
-        if (c & (1 << i)) {
-            HAL_GPIO_WritePin(GPIO_PORT_AMUX, AMUXPins[i], GPIO_PIN_SET);
-        } else {
-            HAL_GPIO_WritePin(GPIO_PORT_AMUX, AMUXPins[i], GPIO_PIN_RESET);
-        }
-    }
-}
-
-void ADC_Read_Knobs() {
-    for (uint8_t channel = 0; channel < NUM_ADC_CHANNELS; channel++) {
-        uint16_t adcBuf[NUM_ADC_SAMPLES];
-
-        ADC_Mux_Select(channel);
-
-        // Select channel
-        ADC_ChannelConfTypeDef sConfig = { 0 };
-        sConfig.Channel = adcChannels[channel];
-        sConfig.Rank = 1;
-        sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-        if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
-            Error_Handler();
-        }
-
-        // Sample the channel NUM_ADC_SAMPLES times to the buffer
-        HAL_ADC_Start(&hadc1);
-        for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
-            HAL_ADC_PollForConversion(&hadc1, 1000);
-            adcBuf[i] = HAL_ADC_GetValue(&hadc1);
-        }
-        HAL_ADC_Stop(&hadc1);
-
-        // Calculate average of all samples for the channel
-        uint16_t adc_sum = 0;
-        for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
-            adc_sum += adcBuf[i];
-        }
-
-        adcAveraged[channel] = adc_sum / NUM_ADC_SAMPLES;
-    }
-}
-
-// Sends a CC message for knob k with the specified value
-void MIDI_Send(Knob *k, uint8_t value) {
-    MX_USB_Send_Midi(k->channel, k->cc, KnobMap(k, value, k->max_range));
-}
-
-// Scales an ADC value from (0, 255) to (0, k->max_values) an applies EMA filter
-uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value) {
-    float midi_scale_factor = 1.0 * k->max_values / UPPER_BOUND_ADC;
-    return MIN(EMA_A * midi_scale_factor * adc_value + (1 - EMA_A) * k->value, k->max_range);
-}
 /* USER CODE END 0 */
 
 /**
@@ -186,23 +109,6 @@ int main(void)
     MX_RTC_Init();
     MX_FATFS_Init();
     /* USER CODE BEGIN 2 */
-
-    Knob knobs[4];
-
-    retSD = f_mount(&SDFatFS, "", 1);
-    retSD = f_open(&SDFile, "knobs.json", FA_READ);
-
-    char readBuf[f_size(&SDFile) + 1];
-    unsigned int bytesRead;
-
-    retSD = f_read(&SDFile, readBuf, sizeof(readBuf) - 1, &bytesRead);
-    readBuf[bytesRead] = '\0';
-
-    Preset_Load(knobs, readBuf);
-    retSD = f_close(&SDFile);
-    retSD = f_mount(NULL, "", 0);
-
-    SD_Disable();
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -210,10 +116,12 @@ int main(void)
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / 40);
 
+    SD_LoadPreset(knobs, "knobs.json");
+
     // Init displays
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
-        ssd1306_Init(&hi2c1, &knobs[i]);
-        ssd1306_WriteKnob(&hi2c1, &knobs[i]);
+        ssd1306_Init(&knobs[i]);
+        ssd1306_WriteKnob(&knobs[i]);
     }
 
     while (1) {
@@ -224,7 +132,7 @@ int main(void)
 
             if (curr_MIDI_val != knobs[i].value) {
                 knobs[i].value = curr_MIDI_val;
-                ssd1306_WriteKnob(&hi2c1, &knobs[i]);
+                ssd1306_WriteKnob(&knobs[i]);
                 if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
                 if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
             }
@@ -430,7 +338,7 @@ static void MX_SDIO_SD_Init(void)
     hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
     hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
     hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-    hsd.Init.ClockDiv = 8;
+    hsd.Init.ClockDiv = 12;
     /* USER CODE BEGIN SDIO_Init 2 */
 
     /* USER CODE END SDIO_Init 2 */
@@ -491,34 +399,50 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/*
- Knob knobs[4] = { { .init_value = 63, .row = 0, .col = 0, .label = "Cutoff", .channel = 0, .cc = 17, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 1 },
- { .init_value = 127, .row = 0, .col = 1, .label = "Resonance", .channel = 1, .cc = 18, .value = 0, .max_values = 128, .max_range = 127, .isLocked = 0 },
- { .init_value = 5, .row = 1, .col = 0, .label = "Osc 0", .channel = 2, .cc = 19, .value = 0, .max_values = 12, .max_range = 127, .isLocked = 1 },
- { .init_value = 11, .row = 1, .col = 1, .label = "Osc 1", .channel = 3, .cc = 20, .value = 0, .max_values = 12, .max_range = 11, .isLocked = 1 } };
+void ADC_Mux_Select(uint8_t c) {
+    if (c > NUM_ADC_CHANNELS) return;
 
- for (int i = 2; i < 4; i++) {
- knobs[i].sub_labels = malloc(sizeof(*knobs[i].sub_labels) * (knobs[i].max_values));
- strncpy(knobs[i].sub_labels[0], "MultiSaw", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[1], "TriWrap", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[2], "Noise", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[3], "Feedback", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[4], "Pulse", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[5], "Saw", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[6], "Triangle", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[7], "Pulse5", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[8], "Pulse6", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[9], "Pulse7", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[10], "Pulse8", MAX_LABEL_CHARS);
- strncpy(knobs[i].sub_labels[11], "Pulse9", MAX_LABEL_CHARS);
- }
+    for (int i = 0; i < NUM_ADC_CHANNELS; i++) {
+        if (c & (1 << i)) {
+            HAL_GPIO_WritePin(GPIO_PORT_AMUX, AMUXPins[i], GPIO_PIN_SET);
+        } else {
+            HAL_GPIO_WritePin(GPIO_PORT_AMUX, AMUXPins[i], GPIO_PIN_RESET);
+        }
+    }
+}
 
- knobs[0].sub_labels = malloc(sizeof(*knobs[0].sub_labels));
- strncpy(knobs[0].sub_labels[0], "Filter 1", MAX_LABEL_CHARS);
+void ADC_Read_Knobs() {
+    for (uint8_t channel = 0; channel < NUM_ADC_CHANNELS; channel++) {
+        uint16_t adcBuf[NUM_ADC_SAMPLES];
 
- knobs[1].sub_labels = malloc(sizeof(*knobs[1].sub_labels));
- strncpy(knobs[1].sub_labels[0], "Filter 2", MAX_LABEL_CHARS);
- */
+        ADC_Mux_Select(channel);
+
+        // Select channel
+        ADC_ChannelConfTypeDef sConfig = { 0 };
+        sConfig.Channel = adcChannels[channel];
+        sConfig.Rank = 1;
+        sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+        if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+            Error_Handler();
+        }
+
+        // Sample the channel NUM_ADC_SAMPLES times to the buffer
+        HAL_ADC_Start(&hadc1);
+        for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
+            HAL_ADC_PollForConversion(&hadc1, 1000);
+            adcBuf[i] = HAL_ADC_GetValue(&hadc1);
+        }
+        HAL_ADC_Stop(&hadc1);
+
+        // Calculate average of all samples for the channel
+        uint16_t adc_sum = 0;
+        for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
+            adc_sum += adcBuf[i];
+        }
+
+        adcAveraged[channel] = adc_sum / NUM_ADC_SAMPLES;
+    }
+}
 /* USER CODE END 4 */
 
 /**

@@ -56,7 +56,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
- void MX_USB_Send_Midi(uint8_t channel, uint8_t cc, uint8_t value);
+void MX_USB_Send_Midi(uint8_t channel, uint8_t cc, uint8_t value);
 /* USER CODE END PFP */
 
 /*
@@ -81,7 +81,7 @@ void MX_USB_DEVICE_Init(void);
  * -- Insert functions declaration here --
  */
 /* USER CODE BEGIN FD */
-
+void MX_USB_Send_Midi(uint8_t channel, uint8_t cc, uint8_t value);
 /* USER CODE END FD */
 /**
   * @}
