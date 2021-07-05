@@ -1,6 +1,6 @@
 #include "preset.h"
 
-void Load_Preset(Knob *k, char* buffer) {
+void Preset_Load(Knob *k, char* buffer) {
     //char* json_str = File_To_String(filename);
     char* json_str = buffer;
     cJSON* knobs_json = cJSON_Parse(json_str);
