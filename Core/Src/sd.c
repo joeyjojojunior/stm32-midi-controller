@@ -3,31 +3,15 @@
  */
 #include "stm32f4xx_hal.h"
 #include "sd.h"
+#include "ssd1306.h"
 
-void SD_FetchPresets() {
-    /*
-     ssd1306_Fill(Black);
-     ssd1306_SetCursor(0, 0);
-     ssd1306_WriteString(root_info.fname, Font_7x10, White);
-
-     char ret[12];
-     snprintf(ret, 12, "%d", retSD);
-     ssd1306_SetCursor(0, 32);
-     ssd1306_WriteString("fname: ", Font_7x10, White);
-     ssd1306_SetCursor(50, 32);
-     ssd1306_WriteString(ret, Font_7x10, White);c copy string until null
-
-
-     ssd1306_UpdateScreen();
-     */
-
+void SD_FetchPresetNames() {
     DIR root;
     FILINFO root_info;
     retSD = f_mount(&SDFatFS, "", 1);
 
     uint8_t presetCount = 0;
     retSD = f_findfirst(&root, &root_info, "", "*.json");
-    if (retSD != FR_OK) ssd1306_WriteErrorCode("findf", 0, retSD);
 
     while (retSD == FR_OK && root_info.fname[0]) {
         presetCount++;
@@ -62,10 +46,9 @@ void SD_FetchPresets() {
     }
 
     retSD = f_mount(NULL, "", 0);
-
 }
 
-void SD_LoadPreset(Knob *knobs, char *filename) {
+void SD_LoadPreset(char *filename) {
     //SD_Enable();
 
     retSD = f_mount(&SDFatFS, "", 1);

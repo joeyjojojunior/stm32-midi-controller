@@ -52,7 +52,6 @@ ADC_HandleTypeDef hadc1;
 RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
-Knob knobs[4];
 uint16_t adcAveraged[4] = { 0 };
 uint32_t adcChannels[4] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
 const uint16_t AMUXPins[4] = { AMUX_S0_Pin, AMUX_S1_Pin, AMUX_S2_Pin, AMUX_S3_Pin };
@@ -113,7 +112,7 @@ int main(void)
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / 40);
 
-    SD_LoadPreset(knobs, "knobs1.json");
+    SD_LoadPreset("knobs1.json");
 
     // Init displays
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
@@ -125,7 +124,7 @@ int main(void)
         ADC_Read_Knobs();
 
         if (isMenuActive) {
-            SD_FetchPresets();
+            SD_FetchPresetNames();
 
             ssd1306_WritePresets(knobs);
 

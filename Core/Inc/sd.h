@@ -13,8 +13,8 @@
 
 SD_HandleTypeDef hsd;
 
-void SD_FetchPresets();
-void SD_LoadPreset(Knob *knobs, char* filename);
+void SD_FetchPresetNames();
+void SD_LoadPreset(char* filename);
 void SD_Toggle();
 void SD_Enable();
 void SD_Disable();

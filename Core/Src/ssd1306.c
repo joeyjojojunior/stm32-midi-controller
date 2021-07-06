@@ -154,7 +154,7 @@ void ssd1306_WriteKnob(Knob *k) {
     ssd1306_UpdateScreen();
 }
 
-void ssd1306_WritePresets(Knob knobs[]) {
+void ssd1306_WritePresets() {
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         ssd1306_Select(&knobs[i]);
         ssd1306_Fill(Black);

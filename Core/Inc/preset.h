@@ -10,7 +10,6 @@
 #include <string.h>
 #include "cJSON.h"
 #include "knob.h"
-#include "ssd1306.h"
 
 char presets[NUM_KNOBS][MAX_LABEL_CHARS+1];
 

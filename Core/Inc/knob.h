@@ -11,6 +11,7 @@
 #define MIDI_MAX 127
 #define NUM_KNOBS 4
 
+
 typedef struct Knob {
 	uint8_t row;
 	uint8_t col;
@@ -24,6 +25,8 @@ typedef struct Knob {
 	uint8_t max_range;
 	uint8_t isLocked;
 } Knob;
+
+Knob knobs[4];
 
 void Knob_Free(Knob *k);
 uint8_t Knob_Map(Knob *k, uint8_t value, uint8_t m);

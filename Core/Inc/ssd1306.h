@@ -70,7 +70,7 @@ void ssd1306_WriteKnob(Knob *k);
 void ssd1306_DrawPixel(uint8_t x, uint8_t y, SSD1306_COLOR color);
 char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color);
 char ssd1306_WriteString(char* str, FontDef Font, SSD1306_COLOR color);
-void ssd1306_WritePresets(Knob knobs[]);
+void ssd1306_WritePresets();
 void ssd1306_WriteErrorCode(char *label, uint8_t y, uint8_t err_code);
 void ssd1306_SetCursor(uint8_t x, uint8_t y);
 void ssd1306_AdjustBrightness(uint8_t brightness);
