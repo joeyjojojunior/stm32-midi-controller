@@ -37,7 +37,7 @@ Core/Src/preset.o: ../Core/Src/preset.c ../Core/Inc/preset.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Core/Inc/fonts.h
+ ../Core/Inc/fonts.h ../Core/Inc/preset.h
 
 ../Core/Inc/preset.h:
 
@@ -122,3 +122,5 @@ Core/Src/preset.o: ../Core/Src/preset.c ../Core/Inc/preset.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
 
 ../Core/Inc/fonts.h:
+
+../Core/Inc/preset.h:

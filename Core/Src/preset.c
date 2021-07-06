@@ -3,8 +3,11 @@
 void Preset_GetName(char *file_buffer, char *name_buffer) {
     cJSON *preset_json = cJSON_Parse(file_buffer);
     if (preset_json == NULL) return;
+    printf("test");
     const cJSON *name = cJSON_GetObjectItemCaseSensitive(preset_json, "name");
-    snprintf(name_buffer, MAX_LABEL_CHARS, "%s", name->valuestring);
+    snprintf(name_buffer, MAX_LABEL_CHARS+1, "%s", name->valuestring);
+
+    cJSON_Delete(preset_json);
 }
 
 void Preset_Load(Knob *knobs, char *buffer) {
@@ -51,4 +54,6 @@ void Preset_Load(Knob *knobs, char *buffer) {
         }
         i++;
     }
+
+    cJSON_Delete(preset_json);
 }

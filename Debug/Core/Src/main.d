@@ -45,9 +45,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../USB_DEVICE/App/usb_device.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h ../Core/Inc/ssd1306.h \
- ../Core/Inc/fonts.h ../Core/Inc/knob.h ../Core/Inc/knob.h \
- ../Core/Inc/preset.h ../cJSON/Inc/cJSON.h ../Core/Inc/ssd1306.h \
- ../Core/Inc/sd.h ../Core/Inc/preset.h ../Core/Inc/midi.h
+ ../Core/Inc/fonts.h ../Core/Inc/knob.h ../Core/Inc/preset.h \
+ ../cJSON/Inc/cJSON.h ../Core/Inc/ssd1306.h ../Core/Inc/knob.h \
+ ../Core/Inc/preset.h ../Core/Inc/sd.h ../Core/Inc/midi.h
 
 ../Core/Inc/main.h:
 
@@ -157,16 +157,16 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/knob.h:
 
-../Core/Inc/knob.h:
-
 ../Core/Inc/preset.h:
 
 ../cJSON/Inc/cJSON.h:
 
 ../Core/Inc/ssd1306.h:
 
-../Core/Inc/sd.h:
+../Core/Inc/knob.h:
 
 ../Core/Inc/preset.h:
+
+../Core/Inc/sd.h:
 
 ../Core/Inc/midi.h:

@@ -1,7 +1,8 @@
-#include "ssd1306.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "ssd1306.h"
+
 
 // Screenbuffer
 static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
@@ -153,6 +154,18 @@ void ssd1306_WriteKnob(Knob *k) {
     ssd1306_UpdateScreen();
 }
 
+void ssd1306_WritePresets(Knob knobs[]) {
+    for (uint8_t i = 0; i < NUM_KNOBS; i++) {
+        ssd1306_Select(&knobs[i]);
+        ssd1306_Fill(Black);
+        uint8_t x = (SSD1306_WIDTH - strlen(presets[i]) * Font_10x18.FontWidth) / 2;
+        uint8_t y = SSD1306_HEIGHT / 2 - Font_10x18.FontHeight / 2;
+        ssd1306_SetCursor(x, y);
+        ssd1306_WriteString(presets[i], Font_10x18, White);
+        ssd1306_UpdateScreen();
+    }
+}
+
 //  Draw one pixel in the screenbuffer
 //  X => X Coordinate
 //  Y => Y Coordinate
@@ -224,6 +237,20 @@ char ssd1306_WriteString(char *str, FontDef Font, SSD1306_COLOR color) {
 
     // Everything ok
     return *str;
+}
+
+void ssd1306_WriteErrorCode(char *label, uint8_t y, uint8_t err_code) {
+    ssd1306_Fill(Black);
+    ssd1306_SetCursor(0, y);
+    ssd1306_WriteString("label: %s\n", Font_7x10, White);
+
+    char err_str[16];
+    snprintf(err_str, sizeof(err_str) / sizeof(err_str[0]), "%d", err_code);
+    ssd1306_SetCursor(2 * SSD1306_WIDTH / 3, y);
+    ssd1306_WriteString(err_str, Font_7x10, White);
+
+    ssd1306_UpdateScreen();
+
 }
 
 //  Invert background/foreground colors

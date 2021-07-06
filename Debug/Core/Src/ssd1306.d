@@ -36,7 +36,8 @@ Core/Src/ssd1306.o: ../Core/Src/ssd1306.c ../Core/Inc/ssd1306.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Core/Inc/fonts.h ../Core/Inc/knob.h
+ ../Core/Inc/fonts.h ../Core/Inc/knob.h ../Core/Inc/preset.h \
+ ../cJSON/Inc/cJSON.h ../Core/Inc/ssd1306.h
 
 ../Core/Inc/ssd1306.h:
 
@@ -117,3 +118,9 @@ Core/Src/ssd1306.o: ../Core/Src/ssd1306.c ../Core/Inc/ssd1306.h \
 ../Core/Inc/fonts.h:
 
 ../Core/Inc/knob.h:
+
+../Core/Inc/preset.h:
+
+../cJSON/Inc/cJSON.h:
+
+../Core/Inc/ssd1306.h:

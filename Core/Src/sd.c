@@ -15,7 +15,7 @@ void SD_FetchPresets() {
      ssd1306_SetCursor(0, 32);
      ssd1306_WriteString("fname: ", Font_7x10, White);
      ssd1306_SetCursor(50, 32);
-     ssd1306_WriteString(ret, Font_7x10, White);
+     ssd1306_WriteString(ret, Font_7x10, White);c copy string until null
 
 
      ssd1306_UpdateScreen();
@@ -27,42 +27,41 @@ void SD_FetchPresets() {
 
     uint8_t presetCount = 0;
     retSD = f_findfirst(&root, &root_info, "", "*.json");
+    if (retSD != FR_OK) ssd1306_WriteErrorCode("findf", 0, retSD);
+
     while (retSD == FR_OK && root_info.fname[0]) {
         presetCount++;
         retSD = f_findnext(&root, &root_info);
     }
     f_closedir(&root);
 
-    char filenames[presetCount][MAX_LFN_CHARS];
+    char filenames[presetCount][_MAX_LFN+1];
     uint8_t i = 0;
     retSD = f_findfirst(&root, &root_info, "", "*.json");
     while (retSD == FR_OK && root_info.fname[0]) {
-        snprintf(filenames[i], MAX_LFN_CHARS+1, "%s", root_info.fname);
+        snprintf(filenames[i], _MAX_LFN+1, "%s", root_info.fname);
         retSD = f_findnext(&root, &root_info);
         i++;
     }
 
     qsort(filenames, presetCount, sizeof(filenames[0]), qsort_cmp);
 
+    for (i = 0; i < presetCount; i++) {
+        retSD = f_open(&SDFile, filenames[i], FA_READ);
 
-     for (uint8_t i = 0; i < presetCount; i++) {
-     retSD = f_open(&SDFile, filenames[i], FA_READ);
+        char presetBuffer[f_size(&SDFile) + 1];
+        char nameBuffer[MAX_LABEL_CHARS + 1];
+        unsigned int bytesRead;
+        retSD = f_read(&SDFile, presetBuffer, sizeof(presetBuffer) - 1, &bytesRead);
+        presetBuffer[bytesRead] = '\0';
 
-     char presetBuffer[f_size(&SDFile) + 1];
-     char nameBuffer[MAX_LABEL_CHARS + 1];
-     unsigned int bytesRead;
-     retSD = f_read(&SDFile, presetBuffer, sizeof(presetBuffer) - 1, &bytesRead);
-     presetBuffer[bytesRead] = '\0';
+        Preset_GetName(presetBuffer, nameBuffer);
 
-     Preset_GetName(presetBuffer, nameBuffer);
+        snprintf(presets[i], MAX_LABEL_CHARS + 1, "%s", nameBuffer);
+        retSD = f_close(&SDFile);
+    }
 
-     snprintf(presets[i], sizeof(presets[0]) / sizeof(presets[0][0]), "%s", nameBuffer);
-     retSD = f_close(&SDFile);
-     }
-
-
-     retSD = f_mount(NULL, "", 0);
-
+    retSD = f_mount(NULL, "", 0);
 
 }
 
@@ -100,7 +99,7 @@ void SD_Disable() {
     hsd.State = HAL_SD_STATE_RESET;
 }
 
-int qsort_cmp(const void* lhs, const void* rhs) {
+int qsort_cmp(const void *lhs, const void *rhs) {
     return strcmp(lhs, rhs);
 }
 
