@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include "ssd1306.h"
 
-
 // Screenbuffer
 static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
 
@@ -94,6 +93,12 @@ void ssd1306_UpdateScreen() {
         ssd1306_WriteCommand(0x00);
         ssd1306_WriteCommand(0x10);
         HAL_I2C_Mem_Write(&hi2c1, SSD1306_I2C_ADDR, 0x40, 1, &SSD1306_Buffer[SSD1306_WIDTH * i], SSD1306_WIDTH, 100);
+    }
+}
+
+void ssd1306_WriteAllKnobs() {
+    for (uint8_t i = 0; i < NUM_KNOBS; i++) {
+        ssd1306_WriteKnob(&knobs[i]);
     }
 }
 

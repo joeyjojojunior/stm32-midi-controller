@@ -11,7 +11,7 @@
 #ifndef INC_SD_H_
 #define INC_SD_H_
 
-SD_HandleTypeDef hsd;
+extern SD_HandleTypeDef hsd;
 
 void SD_FetchPresetNames();
 void SD_LoadPreset(char* filename);

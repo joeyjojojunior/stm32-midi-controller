@@ -10,7 +10,7 @@ void Preset_GetName(char *file_buffer, char *name_buffer) {
     cJSON_Delete(preset_json);
 }
 
-void Preset_Load(Knob *knobs, char *buffer) {
+void Preset_Load(char *buffer) {
     cJSON *preset_json = cJSON_Parse(buffer);
     if (preset_json == NULL) return;
 
