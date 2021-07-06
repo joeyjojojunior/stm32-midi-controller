@@ -198,14 +198,18 @@ void SysTick_Handler(void)
             if (btnStates[i] == GPIO_PIN_RESET) {
                 if (i == BUTTON_MENU) {
                     isMenuActive = !isMenuActive;
-                    isKnobsStale = true;
+                }
+
+                if (isMenuActive && i == 0) {
+                    isLoadPresetActive = true;
                 }
                 HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[i]);
+
             }
         }
-
         btnStatesLast[i] = reading;
     }
+
     /* USER CODE END SysTick_IRQn 0 */
     HAL_IncTick();
     /* USER CODE BEGIN SysTick_IRQn 1 */

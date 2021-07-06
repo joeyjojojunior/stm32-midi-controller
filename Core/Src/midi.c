@@ -15,3 +15,8 @@ uint8_t MIDI_Scale_And_Filter(Knob *k, uint8_t adc_value) {
     float midi_scale_factor = 1.0 * k->max_values / UPPER_BOUND_ADC;
     return MIN(EMA_A * midi_scale_factor * adc_value + (1 - EMA_A) * k->value, k->max_range);
 }
+
+uint8_t MIDI_ScaleMax_And_Filter(Knob *k, uint8_t adc_value) {
+    float midi_scale_factor = 1.0 * MIDI_MAX / UPPER_BOUND_ADC;
+    return MIN(EMA_A * midi_scale_factor * adc_value + (1 - EMA_A) * k->value, k->max_range);
+}

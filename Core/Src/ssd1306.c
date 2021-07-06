@@ -6,6 +6,8 @@
 // Screenbuffer
 static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
 
+static char menuItems[3][MAX_LABEL_CHARS + 1] = { "Load Preset", "Load Patch", "Save Patch" };
+
 // Screen object
 static SSD1306_t SSD1306;
 
@@ -86,6 +88,14 @@ void ssd1306_Fill(SSD1306_COLOR color) {
     }
 }
 
+void ssd1306_FillAll(SSD1306_COLOR color) {
+    for (uint8_t i = 0; i < NUM_KNOBS; i++) {
+        ssd1306_Select(&knobs[i]);
+        ssd1306_Fill(color);
+        ssd1306_UpdateScreen();
+    }
+}
+
 //  Write the screenbuffer with changed to the screen
 void ssd1306_UpdateScreen() {
     for (uint8_t i = 0; i < 8; i++) {
@@ -157,6 +167,19 @@ void ssd1306_WriteKnob(Knob *k) {
     ssd1306_WriteString(k->sub_labels[sl_index], Font_10x18, White);
 
     ssd1306_UpdateScreen();
+}
+
+void ssd1306_WriteMainMenu() {
+    ssd1306_FillAll(Black);
+    for (uint8_t i = 0; i < 3; i++) {
+        ssd1306_Select(&knobs[i]);
+        ssd1306_Fill(Black);
+        uint8_t x = (SSD1306_WIDTH - strlen(menuItems[i]) * Font_10x18.FontWidth) / 2;
+        uint8_t y = SSD1306_HEIGHT / 2 - Font_10x18.FontHeight / 2;
+        ssd1306_SetCursor(x,y);
+        ssd1306_WriteString(menuItems[i], Font_10x18, White);
+        ssd1306_UpdateScreen();
+    }
 }
 
 void ssd1306_WritePresets() {

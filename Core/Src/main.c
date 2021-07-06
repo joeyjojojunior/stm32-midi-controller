@@ -52,9 +52,11 @@ RTC_HandleTypeDef hrtc;
 I2C_HandleTypeDef hi2c1;
 SD_HandleTypeDef hsd;
 /* USER CODE BEGIN PV */
-Knob knobs[4];
 bool isMenuActive = false;
+bool isLoadPresetActive = false;
+bool isPresetsLoaded = false;
 bool isKnobsStale = false;
+Knob knobs[4];
 char presetFilenames[NUM_KNOBS][_MAX_LFN + 1];
 char presetNames[NUM_KNOBS][MAX_LABEL_CHARS + 1];
 uint16_t adcAveraged[NUM_ADC_CHANNELS] = { 0 };
@@ -125,29 +127,48 @@ int main(void)
         ssd1306_Init(&knobs[i]);
         ssd1306_WriteKnob(&knobs[i]);
     }
+    uint64_t cycles = 0;
 
     while (1) {
 
         if (isMenuActive) {
-            SD_FetchPresetNames();
-            ssd1306_WritePresets();
+            if (!isKnobsStale && !isLoadPresetActive) {
+                ssd1306_WriteMainMenu();
+                isKnobsStale = true;
+            }
+
+            if (isLoadPresetActive && !isPresetsLoaded) {
+                for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
+                    adcAveragedPrev[i] = adcAveraged[i];
+                }
+                SD_FetchPresetNames();
+                ssd1306_WritePresets();
+                isPresetsLoaded = true;
+            }
         } else if (isKnobsStale) {
             ssd1306_WriteAllKnobs();
             isKnobsStale = false;
+        } else {
+            isLoadPresetActive = false;
+            isPresetsLoaded = false;
         }
 
-
         for (uint8_t col = 0; col < NUM_COLS; col++) {
+            //adcAveragedPrev[i + col * NUM_ROWS] = adcAveraged[i];
+
             ADC_ReadKnobs();
+
             for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
                 if (isMenuActive) {
-                    uint8_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i + col*NUM_ROWS]);
-                    if (knobDiff > 15) {
-                        SD_LoadPreset(presetFilenames[i]);
-                        knobs[i].isLocked = true;
-                        isMenuActive = !isMenuActive;
-                        ssd1306_WriteAllKnobs();
-                        HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[BUTTON_MENU]);
+                    if (isPresetsLoaded) {
+                        int16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
+                        if (knobDiff > 50) {
+                            SD_LoadPreset(presetFilenames[i]);
+                            knobs[i].isLocked = true;
+                            isMenuActive = false;
+                            ssd1306_WriteAllKnobs();
+                            HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[BUTTON_MENU]);
+                        }
                     }
                 } else {
                     uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
@@ -158,9 +179,12 @@ int main(void)
                         if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
                     }
                 }
-                adcAveragedPrev[i + col*NUM_ROWS] = adcAveraged[i];
+
             }
         }
+
+        cycles++;
+
     }
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         Knob_Free(&knobs[i]);

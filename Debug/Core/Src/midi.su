@@ -1,2 +1,3 @@
 midi.c:9:6:MIDI_Send	24	static
 midi.c:14:9:MIDI_Scale_And_Filter	32	static
+midi.c:19:9:MIDI_ScaleMax_And_Filter	32	static

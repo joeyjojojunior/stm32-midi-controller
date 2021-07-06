@@ -39,6 +39,8 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 extern bool isMenuActive;
+extern bool isLoadPresetActive;
+extern bool isPresetsLoaded;
 extern bool isKnobsStale;
 extern uint8_t btnStates[];
 extern uint8_t btnStatesLast[];
@@ -103,8 +105,6 @@ void Error_Handler(void);
 #define AMUX_S3_Pin GPIO_PIN_9
 #define AMUX_S3_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define NUM_COLS 1
-#define NUM_ROWS 4
 #define NUM_BUTTONS 6
 #define BUTTON_MENU 5
 #define GPIO_PORT_AMUX GPIOB
