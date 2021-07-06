@@ -163,10 +163,10 @@ void ssd1306_WritePresets() {
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         ssd1306_Select(&knobs[i]);
         ssd1306_Fill(Black);
-        uint8_t x = (SSD1306_WIDTH - strlen(presets[i]) * Font_10x18.FontWidth) / 2;
+        uint8_t x = (SSD1306_WIDTH - strlen(presetNames[i]) * Font_10x18.FontWidth) / 2;
         uint8_t y = SSD1306_HEIGHT / 2 - Font_10x18.FontHeight / 2;
         ssd1306_SetCursor(x, y);
-        ssd1306_WriteString(presets[i], Font_10x18, White);
+        ssd1306_WriteString(presetNames[i], Font_10x18, White);
         ssd1306_UpdateScreen();
     }
 }

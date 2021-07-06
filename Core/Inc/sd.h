@@ -12,7 +12,7 @@
 #define INC_SD_H_
 
 extern SD_HandleTypeDef hsd;
-extern char preset_filenames[NUM_KNOBS][_MAX_LFN + 1];
+extern char presetFilenames[NUM_KNOBS][_MAX_LFN + 1];
 
 void SD_FetchPresetNames();
 void SD_LoadPreset(char *filename);

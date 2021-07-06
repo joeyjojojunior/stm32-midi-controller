@@ -11,7 +11,7 @@
 #include "cJSON.h"
 #include "knob.h"
 
-extern char presets[NUM_KNOBS][MAX_LABEL_CHARS+1];
+extern char presetNames[NUM_KNOBS][MAX_LABEL_CHARS+1];
 
 void Preset_GetName(char *file_buffer, char *name_buffer);
 void Preset_Load(char* buffer);
