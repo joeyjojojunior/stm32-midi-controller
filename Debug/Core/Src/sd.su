@@ -1,6 +1,6 @@
-sd.c:8:6:SD_FetchPresetNames	400	dynamic
-sd.c:54:6:SD_LoadPreset	40	dynamic
-sd.c:70:6:SD_Toggle	8	static
-sd.c:74:6:SD_Enable	4	static
-sd.c:79:6:SD_Disable	4	static
-sd.c:84:5:qsort_cmp	16	static
+sd.c:8:6:SD_FetchPresetNames	384	dynamic
+sd.c:53:6:SD_LoadPreset	40	dynamic
+sd.c:69:6:SD_Toggle	8	static
+sd.c:73:6:SD_Enable	4	static
+sd.c:78:6:SD_Disable	4	static
+sd.c:83:5:qsort_cmp	16	static

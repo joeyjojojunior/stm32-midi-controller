@@ -40,7 +40,6 @@
 /* USER CODE BEGIN PD */
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
-#define GPIO_PORT_AMUX GPIOB
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,8 +53,12 @@ I2C_HandleTypeDef hi2c1;
 SD_HandleTypeDef hsd;
 /* USER CODE BEGIN PV */
 Knob knobs[4];
-char presets[NUM_KNOBS][MAX_LABEL_CHARS+1];
+bool isMenuActive = false;
+bool isKnobsStale = false;
+char preset_filenames[NUM_KNOBS][_MAX_LFN + 1];
+char presets[NUM_KNOBS][MAX_LABEL_CHARS + 1];
 uint16_t adcAveraged[4] = { 0 };
+uint16_t adcAveragedPrev[4] = { 0 };
 uint32_t adcChannels[4] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
 const uint16_t AMUXPins[4] = { AMUX_S0_Pin, AMUX_S1_Pin, AMUX_S2_Pin, AMUX_S3_Pin };
 /* USER CODE END PV */
@@ -68,8 +71,8 @@ static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-void ADC_Read_Knobs();
-void ADC_Mux_Select(uint8_t c);
+void ADC_ReadKnobs();
+void ADC_MuxSelect(uint8_t c);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -124,38 +127,50 @@ int main(void)
     }
 
     while (1) {
-        ADC_Read_Knobs();
 
         if (isMenuActive) {
             SD_FetchPresetNames();
             ssd1306_WritePresets();
-
-            while (isMenuActive) {}
-
+        } else if (isKnobsStale) {
             ssd1306_WriteAllKnobs();
+            isKnobsStale = false;
         }
+
+        ADC_ReadKnobs();
 
         for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
-            uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
 
-            if (curr_MIDI_val != knobs[i].value) {
-                knobs[i].value = curr_MIDI_val;
-                ssd1306_WriteKnob(&knobs[i]);
-                if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
-                if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
+            if (isMenuActive) {
+                uint8_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
+                if (knobDiff > 15) {
+                    SD_LoadPreset(preset_filenames[i]);
+                    knobs[i].isLocked = true;
+                    isMenuActive = !isMenuActive;
+                    ssd1306_WriteAllKnobs();
+                    HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[BUTTON_MENU]);
+                }
+            } else {
+                uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
+                if (curr_MIDI_val != knobs[i].value) {
+                    knobs[i].value = curr_MIDI_val;
+                    ssd1306_WriteKnob(&knobs[i]);
+                    if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
+                    if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
+                }
             }
         }
-
-        /* USER CODE END WHILE */
-
-        /* USER CODE BEGIN 3 */
     }
-
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         Knob_Free(&knobs[i]);
     }
-    /* USER CODE END 3 */
+
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
 }
+
+
+/* USER CODE END 3 */
 
 /**
  * @brief System Clock Configuration
@@ -408,7 +423,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void ADC_Mux_Select(uint8_t c) {
+void ADC_MuxSelect(uint8_t c) {
     if (c > NUM_ADC_CHANNELS) return;
 
     for (int i = 0; i < NUM_ADC_CHANNELS; i++) {
@@ -420,11 +435,11 @@ void ADC_Mux_Select(uint8_t c) {
     }
 }
 
-void ADC_Read_Knobs() {
+void ADC_ReadKnobs() {
     for (uint8_t channel = 0; channel < NUM_ADC_CHANNELS; channel++) {
         uint16_t adcBuf[NUM_ADC_SAMPLES];
 
-        ADC_Mux_Select(channel);
+        ADC_MuxSelect(channel);
 
         // Select channel
         ADC_ChannelConfTypeDef sConfig = { 0 };
@@ -449,6 +464,7 @@ void ADC_Read_Knobs() {
             adc_sum += adcBuf[i];
         }
 
+        adcAveragedPrev[channel] = adcAveraged[channel];
         adcAveraged[channel] = adc_sum / NUM_ADC_SAMPLES;
     }
 }

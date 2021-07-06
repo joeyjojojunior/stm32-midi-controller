@@ -20,21 +20,20 @@ void SD_FetchPresetNames() {
     f_closedir(&root);
 
     // Save the filename of each file so we can sort the list
-    char filenames[presetCount][_MAX_LFN+1];
     uint8_t i = 0;
     retSD = f_findfirst(&root, &root_info, "", "*.json");
     while (retSD == FR_OK && root_info.fname[0]) {
-        snprintf(filenames[i], _MAX_LFN+1, "%s", root_info.fname);
+        snprintf(preset_filenames[i], _MAX_LFN+1, "%s", root_info.fname);
         retSD = f_findnext(&root, &root_info);
         i++;
     }
 
     // Sort the filenames
-    qsort(filenames, presetCount, sizeof(filenames[0]), qsort_cmp);
+    qsort(preset_filenames, presetCount, sizeof(preset_filenames[0]), qsort_cmp);
 
     // Open each file, parse the name, and save it to the presets array
     for (i = 0; i < presetCount; i++) {
-        retSD = f_open(&SDFile, filenames[i], FA_READ);
+        retSD = f_open(&SDFile, preset_filenames[i], FA_READ);
 
         char presetBuffer[f_size(&SDFile) + 1];
         char nameBuffer[MAX_LABEL_CHARS + 1];

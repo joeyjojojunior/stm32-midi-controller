@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+#include "ssd1306.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,11 +34,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NUM_BUTTONS 6
-#define BUTTON_MENU 5
-#define GPIO_PORT_BUTTONS_1TO5 GPIOA
-#define GPIO_PORT_BUTTON_6 Button_6_GPIO_Port
-#define GPIO_PORT_LEDS GPIOB
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -202,6 +198,7 @@ void SysTick_Handler(void)
             if (btnStates[i] == GPIO_PIN_RESET) {
                 if (i == BUTTON_MENU) {
                     isMenuActive = !isMenuActive;
+                    isKnobsStale = true;
                 }
                 HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[i]);
             }

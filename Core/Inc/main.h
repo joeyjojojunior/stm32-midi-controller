@@ -38,7 +38,12 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-bool isMenuActive;
+extern bool isMenuActive;
+extern bool isKnobsStale;
+extern uint8_t btnStates[];
+extern uint8_t btnStatesLast[];
+extern uint16_t btnPins[];
+extern uint16_t LEDPins[];
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -98,7 +103,12 @@ void Error_Handler(void);
 #define AMUX_S3_Pin GPIO_PIN_9
 #define AMUX_S3_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-
+#define NUM_BUTTONS 6
+#define BUTTON_MENU 5
+#define GPIO_PORT_AMUX GPIOB
+#define GPIO_PORT_BUTTONS_1TO5 GPIOA
+#define GPIO_PORT_BUTTON_6 Button_6_GPIO_Port
+#define GPIO_PORT_LEDS GPIOB
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
