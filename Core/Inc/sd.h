@@ -14,7 +14,6 @@ extern SD_HandleTypeDef hsd;
 extern char presetFilenames[NUM_KNOBS][_MAX_LFN + 1];
 extern char patchFilenames[NUM_KNOBS][_MAX_LFN + 1];
 extern bool isPresetFilenamesLoaded;
-extern bool isPatchFilenamesLoaded;
 
 void SD_FetchPresetNames();
 bool SD_LoadPreset(char *filename);

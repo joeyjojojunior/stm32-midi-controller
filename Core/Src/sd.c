@@ -7,7 +7,6 @@
 char presetFilenames[NUM_KNOBS][_MAX_LFN + 1];
 char patchFilenames[NUM_KNOBS][_MAX_LFN + 1];
 bool isPresetFilenamesLoaded = false;
-bool isPatchFilenamesLoaded = false;
 
 void SD_FetchPresetNames() {
     DIR root;

@@ -142,9 +142,6 @@ int main(void)
                         if (isPresetFilenamesLoaded) {
                             loadComplete = SD_LoadPreset(presetFilenames[i]);
                             isPresetFilenamesLoaded = false;
-                        } else if (isPatchFilenamesLoaded) {
-                            //loadComplete = SD_LoadPatch(patchFilenames[i]);
-                            isPatchFilenamesLoaded = false;
                         }
 
                         if (loadComplete) {
@@ -153,7 +150,6 @@ int main(void)
                             //ssd1306_WriteLoadNotification();
                         }
                     }
-
                     continue;
                 }
 
@@ -215,9 +211,9 @@ void MenuStateMachine(State *s) {
 
         if (Button_IsDown(BUTTON_MENU)) *s = NORMAL;
         else if (Button_IsDown(BUTTON_1)) *s = LOAD_PRESET;
-        else if (Button_IsDown(BUTTON_2)) *s = LOAD_PATCH;
-        else if (Button_IsDown(BUTTON_3)) *s = SAVE_PATCH;
+        else if (Button_IsDown(BUTTON_2)) *s = SAVE_PRESET;
 
+        Button_Ignore(BUTTON_3);
         Button_Ignore(BUTTON_4);
         Button_Ignore(BUTTON_5);
         break;
@@ -240,17 +236,13 @@ void MenuStateMachine(State *s) {
 
         Button_Ignore(BUTTON_1);
         Button_Ignore(BUTTON_2);
-        Button_Ignore(BUTTON_3);
         break;
-    case LOAD_PATCH:
-        //SD_FetchPatchNames();
-
+    case SAVE_PRESET:
         if (!isDisplaysLocked) {
-            //ssd1306_WritePatches();
+            //ssd1306_WriteSaveNotification();
             ssd1306_FillAll(Black);
             isDisplaysLocked = true;
         }
-        isPatchFilenamesLoaded = true;
 
         LED_On(BUTTON_2);
 
@@ -258,22 +250,6 @@ void MenuStateMachine(State *s) {
 
         Button_Ignore(BUTTON_1);
         Button_Ignore(BUTTON_2);
-        Button_Ignore(BUTTON_3);
-        break;
-    case SAVE_PATCH:
-        if (!isDisplaysLocked) {
-            //ssd1306_WriteSaveNotification();
-            ssd1306_FillAll(Black);
-            isDisplaysLocked = true;
-        }
-
-        LED_On(BUTTON_3);
-
-        if (Button_IsDown(BUTTON_MENU)) *s = MENU;
-
-        Button_Ignore(BUTTON_1);
-        Button_Ignore(BUTTON_2);
-        Button_Ignore(BUTTON_3);
         break;
     }
 }

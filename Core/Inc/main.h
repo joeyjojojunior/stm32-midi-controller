@@ -37,7 +37,7 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 typedef const enum { BUTTON_1 = 0, BUTTON_2, BUTTON_3, BUTTON_4, BUTTON_5, BUTTON_MENU } Buttons;
-typedef enum { NORMAL = 0, MENU, LOAD_PRESET, LOAD_PATCH, SAVE_PATCH} State;
+typedef enum { NORMAL = 0, MENU, LOAD_PRESET, SAVE_PRESET } State;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
