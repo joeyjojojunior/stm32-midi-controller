@@ -50,7 +50,7 @@ void SD_FetchPresetNames() {
     retSD = f_mount(NULL, "", 0);
 }
 
-void SD_LoadPreset(char *filename) {
+bool SD_LoadPreset(char *filename) {
     retSD = f_mount(&SDFatFS, "", 1);
     retSD = f_open(&SDFile, filename, FA_READ);
 
@@ -64,6 +64,7 @@ void SD_LoadPreset(char *filename) {
     retSD = f_close(&SDFile);
     retSD = f_mount(NULL, "", 0);
 
+    return true;
 }
 
 void SD_Toggle() {
