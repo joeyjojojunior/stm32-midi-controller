@@ -52,17 +52,20 @@ RTC_HandleTypeDef hrtc;
 I2C_HandleTypeDef hi2c1;
 SD_HandleTypeDef hsd;
 /* USER CODE BEGIN PV */
-bool isMenuActive = false;
-bool isLoadPresetActive = false;
-bool isPresetsLoaded = false;
-bool isKnobsStale = false;
 Knob knobs[4];
+
 char presetFilenames[NUM_KNOBS][_MAX_LFN + 1];
 char presetNames[NUM_KNOBS][MAX_LABEL_CHARS + 1];
+
 uint16_t adcAveraged[NUM_ADC_CHANNELS] = { 0 };
 uint16_t adcAveragedPrev[NUM_KNOBS] = { 0 };
 const uint32_t adcChannels[NUM_ADC_CHANNELS] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
+
 const uint16_t AMUXPins[4] = { AMUX_S0_Pin, AMUX_S1_Pin, AMUX_S2_Pin, AMUX_S3_Pin };
+
+volatile bool btnDown[NUM_BUTTONS] = { false };
+
+uint8_t page = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,6 +76,73 @@ static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
+void LED_On(uint8_t i) {
+    HAL_GPIO_WritePin(GPIO_PORT_LEDS, LEDPins[i], GPIO_PIN_SET);
+}
+
+void LED_Off(uint8_t i) {
+    HAL_GPIO_WritePin(GPIO_PORT_LEDS, LEDPins[i], GPIO_PIN_RESET);
+}
+
+void LED_AllOff() {
+    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+        LED_Off(i);
+    }
+}
+
+void LED_Toggle(uint8_t i) {
+    HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[i]);
+}
+
+bool isButtonDown(uint8_t i) {
+    bool ret = btnDown[i];
+    if (ret) btnDown[i] = false;
+    return ret;
+}
+
+void Button_Ignore(uint8_t i) {
+    btnDown[i] = false;
+}
+
+void Button_Clear() {
+    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+        btnDown[i] = false;
+    }
+}
+
+
+void Button_Eval(State *s) {
+
+}
+
+void Print_State(State *s) {
+    char t[20];
+    size_t tl = sizeof(t) / sizeof(t[0]);
+
+    switch (*s) {
+    case NORMAL:
+        snprintf(t, tl, "%s", "NORMAL");
+        break;
+    case MENU:
+        snprintf(t, tl, "%s", "MENU");
+        break;
+    case LOAD_PRESET:
+        snprintf(t, tl, "%s", "LOAD_PRESET");
+        break;
+    case LOAD_PATCH:
+        snprintf(t, tl, "%s", "LOAD_PATCH");
+        break;
+    case SAVE_PATCH:
+        snprintf(t, tl, "%s", "SAVE_PATCH");
+        break;
+    }
+
+    ssd1306_Fill(Black);
+    ssd1306_SetCursor(0, 0);
+    ssd1306_WriteString(t, Font_10x18, White);
+    ssd1306_UpdateScreen();
+}
+
 void ADC_ReadKnobs();
 void ADC_MuxSelect(uint8_t c);
 /* USER CODE END PFP */
@@ -127,63 +197,172 @@ int main(void)
         ssd1306_Init(&knobs[i]);
         ssd1306_WriteKnob(&knobs[i]);
     }
-    uint64_t cycles = 0;
+
+    State state = NORMAL;
+    State *s = &state;
+
+    uint8_t temp = 0;
+
+
 
     while (1) {
 
-        if (isMenuActive) {
-            if (!isKnobsStale && !isLoadPresetActive) {
-                ssd1306_WriteMainMenu();
-                isKnobsStale = true;
-            }
+        /*
+         if (temp == 0) {
+         btnDown[BUTTON_MENU] = true;
+         }
 
-            if (isLoadPresetActive && !isPresetsLoaded) {
-                for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
-                    adcAveragedPrev[i] = adcAveraged[i];
+         if (temp == 1) {
+         btnDown[BUTTON_1] = true;
+         }
+
+         if (temp == 2) {
+         btnDown[BUTTON_1] = true;
+         }
+
+         if (temp == 3) {
+         btnDown[BUTTON_MENU] = true;
+         }
+         */
+
+        Print_State(s);
+
+        switch (*s) {
+        case NORMAL:
+            for (uint8_t i = 0; i < NUM_BUTTONS - 1; i++) {
+                if (isButtonDown(i)) {
+                    LED_Off(page);
+                    page = i;
+                    break;
                 }
-                SD_FetchPresetNames();
-                ssd1306_WritePresets();
-                isPresetsLoaded = true;
             }
-        } else if (isKnobsStale) {
-            ssd1306_WriteAllKnobs();
-            isKnobsStale = false;
-        } else {
-            isLoadPresetActive = false;
-            isPresetsLoaded = false;
+            LED_AllOff();
+            LED_On(page);
+            if (isButtonDown(BUTTON_MENU)) {
+                *s = MENU;
+            }
+            break;
+        case MENU:
+            LED_AllOff();
+            LED_On(BUTTON_MENU);
+
+            if (isButtonDown(BUTTON_MENU)) *s = NORMAL;
+            else if (isButtonDown(BUTTON_1)) *s = LOAD_PRESET;
+            else if (isButtonDown(BUTTON_2)) *s = LOAD_PATCH;
+            else if (isButtonDown(BUTTON_3)) *s = SAVE_PATCH;
+
+            Button_Ignore(BUTTON_4);
+            Button_Ignore(BUTTON_5);
+            break;
+        case LOAD_PRESET:
+            LED_On(BUTTON_1);
+
+            if (isButtonDown(BUTTON_MENU)) *s = MENU;
+
+            Button_Ignore(BUTTON_1);
+            Button_Ignore(BUTTON_2);
+            Button_Ignore(BUTTON_3);
+
+            /*
+             * Display presets
+             * Wait for knob turn to select preset
+             * Load selected preset from SD card
+             */
+            break;
+        case LOAD_PATCH:
+            LED_On(BUTTON_2);
+
+            if (isButtonDown(BUTTON_MENU)) *s = MENU;
+
+            Button_Ignore(BUTTON_1);
+            Button_Ignore(BUTTON_2);
+            Button_Ignore(BUTTON_3);
+
+            /*
+             * Display patches
+             * Wait for knob turn to select patch
+             * Load selected patch from SD card
+             */
+            break;
+        case SAVE_PATCH:
+            LED_On(BUTTON_3);
+
+            if (isButtonDown(BUTTON_MENU)) *s = MENU;
+
+            Button_Ignore(BUTTON_1);
+            Button_Ignore(BUTTON_2);
+            Button_Ignore(BUTTON_3);
+            /*
+             * Export values to patch file
+             */
+            break;
         }
 
-        for (uint8_t col = 0; col < NUM_COLS; col++) {
-            //adcAveragedPrev[i + col * NUM_ROWS] = adcAveraged[i];
+        temp++;
 
-            ADC_ReadKnobs();
+        /*
+         for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+         if (isButtonDown[i]) {
+         isButtonDown[i] = false;
+         HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[i]);
+         }
 
-            for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
-                if (isMenuActive) {
-                    if (isPresetsLoaded) {
-                        int16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
-                        if (knobDiff > 50) {
-                            SD_LoadPreset(presetFilenames[i]);
-                            knobs[i].isLocked = true;
-                            isMenuActive = false;
-                            ssd1306_WriteAllKnobs();
-                            HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[BUTTON_MENU]);
-                        }
-                    }
-                } else {
-                    uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
-                    if (curr_MIDI_val != knobs[i].value) {
-                        knobs[i].value = curr_MIDI_val;
-                        ssd1306_WriteKnob(&knobs[i]);
-                        if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
-                        if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
-                    }
-                }
+         }
+         */
 
-            }
-        }
+        /*
+         if (isMenuActive) {
+         if (!isKnobsStale && !isLoadPresetActive) {
+         ssd1306_WriteMainMenu();
+         isKnobsStale = true;
+         }
 
-        cycles++;
+         if (isLoadPresetActive && !isPresetsLoaded) {
+         for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
+         adcAveragedPrev[i] = adcAveraged[i];
+         }
+         SD_FetchPresetNames();
+         ssd1306_WritePresets();
+         isPresetsLoaded = true;
+         }
+         } else if (isKnobsStale) {
+         ssd1306_WriteAllKnobs();
+         isKnobsStale = false;
+         } else {
+         isLoadPresetActive = false;
+         isPresetsLoaded = false;
+         }
+
+         for (uint8_t col = 0; col < NUM_COLS; col++) {
+         //adcAveragedPrev[i + col * NUM_ROWS] = adcAveraged[i];
+
+         ADC_ReadKnobs();
+
+         for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
+         if (isMenuActive) {
+         if (isPresetsLoaded) {
+         int16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
+         if (knobDiff > 50) {
+         SD_LoadPreset(presetFilenames[i]);
+         knobs[i].isLocked = true;
+         isMenuActive = false;
+         ssd1306_WriteAllKnobs();
+         HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[BUTTON_MENU]);
+         }
+         }
+         } else {
+         uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
+         if (curr_MIDI_val != knobs[i].value) {
+         knobs[i].value = curr_MIDI_val;
+         ssd1306_WriteKnob(&knobs[i]);
+         if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
+         if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
+         }
+         }
+
+         }
+         }
+         */
 
     }
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {

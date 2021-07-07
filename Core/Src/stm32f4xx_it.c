@@ -43,8 +43,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-uint8_t btnStates[NUM_BUTTONS] = { GPIO_PIN_SET };
-uint8_t btnStatesLast[NUM_BUTTONS] = { GPIO_PIN_SET };
+uint8_t btnCount[NUM_BUTTONS] = { 0 };
+uint8_t btnState[NUM_BUTTONS] = { GPIO_PIN_SET };
+
 uint16_t btnPins[] = { Button_1_Pin, Button_2_Pin, Button_3_Pin, Button_4_Pin, Button_5_Pin, Button_6_Pin };
 uint16_t LEDPins[] = { LED_1_Pin, LED_2_Pin, LED_3_Pin, LED_4_Pin, LED_5_Pin, LED_6_Pin };
 /* USER CODE END PV */
@@ -188,26 +189,26 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
     /* USER CODE BEGIN SysTick_IRQn 0 */
+
+
+
     for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
         GPIO_TypeDef *t = (i == BUTTON_MENU) ? GPIO_PORT_BUTTON_6 : GPIO_PORT_BUTTONS_1TO5;
-        uint8_t reading = HAL_GPIO_ReadPin(t, btnPins[i]);
+        uint8_t currentState = HAL_GPIO_ReadPin(t, btnPins[i]);
 
-        if (reading == btnStatesLast[i] && reading != btnStates[i]) {
-            btnStates[i] = reading;
+        if (currentState != btnState[i]) {
+            btnCount[i]++;
+            if (btnCount[i] >= 4) {
+                btnState[i] = currentState;
 
-            if (btnStates[i] == GPIO_PIN_RESET) {
-                if (i == BUTTON_MENU) {
-                    isMenuActive = !isMenuActive;
-                }
+                if (currentState != GPIO_PIN_SET)
+                    btnDown[i] = true;
 
-                if (isMenuActive && i == 0) {
-                    isLoadPresetActive = true;
-                }
-                HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[i]);
-
+                btnCount[i] = 0;
             }
+        } else {
+            btnCount[i] = 0;
         }
-        btnStatesLast[i] = reading;
     }
 
     /* USER CODE END SysTick_IRQn 0 */
