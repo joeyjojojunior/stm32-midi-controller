@@ -1,5 +1,5 @@
-Core/Src/button.o: ../Core/Src/button.c ../Core/Inc/button.h \
- ../Core/Inc/main.h ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
+Core/Src/button.o: ../Core/Src/button.c ../Core/Inc/ssd1306.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h \
@@ -35,11 +35,11 @@ Core/Src/button.o: ../Core/Src/button.c ../Core/Inc/button.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_sdmmc.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
+ ../Core/Inc/fonts.h ../Core/Inc/knob.h ../Core/Inc/preset.h \
+ ../cJSON/Inc/cJSON.h ../Core/Inc/button.h ../Core/Inc/main.h
 
-../Core/Inc/button.h:
-
-../Core/Inc/main.h:
+../Core/Inc/ssd1306.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -114,3 +114,15 @@ Core/Src/button.o: ../Core/Src/button.c ../Core/Inc/button.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
+
+../Core/Inc/fonts.h:
+
+../Core/Inc/knob.h:
+
+../Core/Inc/preset.h:
+
+../cJSON/Inc/cJSON.h:
+
+../Core/Inc/button.h:
+
+../Core/Inc/main.h:

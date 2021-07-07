@@ -51,6 +51,7 @@ typedef enum {
 } SSD1306_COLOR;
 
 extern I2C_HandleTypeDef hi2c1;
+extern bool isDisplaysLocked;
 
 //
 //  Struct to store transformations

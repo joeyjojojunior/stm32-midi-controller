@@ -54,23 +54,13 @@ RTC_HandleTypeDef hrtc;
 I2C_HandleTypeDef hi2c1;
 SD_HandleTypeDef hsd;
 /* USER CODE BEGIN PV */
-Knob knobs[4];
-
-char presetFilenames[NUM_KNOBS][_MAX_LFN + 1];
-char presetNames[NUM_KNOBS][MAX_LABEL_CHARS + 1];
+State state = NORMAL;
+uint8_t knobPage = 0;
 
 uint16_t adcAveraged[NUM_ADC_CHANNELS] = { 0 };
 uint16_t adcAveragedPrev[NUM_KNOBS] = { 0 };
 const uint32_t adcChannels[NUM_ADC_CHANNELS] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
 const uint16_t AMUXPins[4] = { AMUX_S0_Pin, AMUX_S1_Pin, AMUX_S2_Pin, AMUX_S3_Pin };
-
-bool isPresetsLoaded = false;
-bool isPatchesLoaded = false;
-bool isDisplayLocked = false;
-
-uint8_t page = 0;
-
-volatile bool btnDown[NUM_BUTTONS] = { false };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,10 +71,7 @@ static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-
-
-
-
+void MenuStateMachine(State *s);
 void ADC_ReadKnobs();
 void ADC_MuxSelect(uint8_t c);
 /* USER CODE END PFP */
@@ -129,9 +116,12 @@ int main(void)
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
+
+    // Set up SysTick timer
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / 40);
 
+    // Load the first preset (TODO: load the last preset used)
     SD_LoadPreset("knobs1.json");
 
     // Init displays
@@ -140,101 +130,10 @@ int main(void)
         ssd1306_WriteKnob(&knobs[i]);
     }
 
-    State state = NORMAL;
     State *s = &state;
 
     while (1) {
-        switch (*s) {
-        case NORMAL:
-            if (!isDisplayLocked) {
-                ssd1306_WriteAllKnobs();
-                isDisplayLocked = true;
-            }
-
-            for (uint8_t i = 0; i < NUM_BUTTONS - 1; i++) {
-                if (Button_IsDown(i)) {
-                    LED_Off(page);
-                    page = i;
-                    break;
-                }
-            }
-            LED_AllOff();
-            LED_On(page);
-            if (Button_IsDown(BUTTON_MENU)) {
-                *s = MENU;
-            }
-            break;
-        case MENU:
-            if (!isDisplayLocked) {
-                ssd1306_WriteMainMenu();
-                isDisplayLocked = true;
-            }
-
-            LED_AllOff();
-            LED_On(BUTTON_MENU);
-
-            if (Button_IsDown(BUTTON_MENU)) *s = NORMAL;
-            else if (Button_IsDown(BUTTON_1)) *s = LOAD_PRESET;
-            else if (Button_IsDown(BUTTON_2)) *s = LOAD_PATCH;
-            else if (Button_IsDown(BUTTON_3)) *s = SAVE_PATCH;
-
-            Button_Ignore(BUTTON_4);
-            Button_Ignore(BUTTON_5);
-            break;
-        case LOAD_PRESET:
-            SD_FetchPresetNames();
-            if (!isDisplayLocked) {
-                ssd1306_WritePresets();
-                isDisplayLocked = true;
-            }
-            isPresetsLoaded = true;
-
-            for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
-                adcAveragedPrev[i] = adcAveraged[i];
-            }
-
-            LED_On(BUTTON_1);
-
-            if (Button_IsDown(BUTTON_MENU)) *s = MENU;
-
-            Button_Ignore(BUTTON_1);
-            Button_Ignore(BUTTON_2);
-            Button_Ignore(BUTTON_3);
-
-            break;
-        case LOAD_PATCH:
-            if (!isDisplayLocked) {
-                ssd1306_FillAll(Black);
-                isDisplayLocked = true;
-            }
-            isPatchesLoaded = true;
-
-            LED_On(BUTTON_2);
-
-            if (Button_IsDown(BUTTON_MENU)) *s = MENU;
-
-            Button_Ignore(BUTTON_1);
-            Button_Ignore(BUTTON_2);
-            Button_Ignore(BUTTON_3);
-
-            break;
-        case SAVE_PATCH:
-            if (!isDisplayLocked) {
-                ssd1306_FillAll(Black);
-                isDisplayLocked = true;
-            }
-
-            LED_On(BUTTON_3);
-
-            if (Button_IsDown(BUTTON_MENU)) *s = MENU;
-
-            Button_Ignore(BUTTON_1);
-            Button_Ignore(BUTTON_2);
-            Button_Ignore(BUTTON_3);
-
-            break;
-        }
-
+        MenuStateMachine(s);
         ADC_ReadKnobs();
 
         for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
@@ -242,17 +141,17 @@ int main(void)
                 uint16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
                 if (knobDiff > 5) {
                     bool loadComplete = false;
-                    if (isPresetsLoaded) {
+                    if (isPresetFilenamesLoaded) {
                         loadComplete = SD_LoadPreset(presetFilenames[i]);
-                        isPresetsLoaded = false;
-                    } else if (isPatchesLoaded) {
-                        //SD_LoadPatch(presetFilenames[i]);
-                        isPatchesLoaded = false;
+                        isPresetFilenamesLoaded = false;
+                    } else if (isPatchFilenamesLoaded) {
+                        //SD_LoadPatch(patchFilenames[i]);
+                        isPatchFilenamesLoaded = false;
                     }
 
                     if (loadComplete) {
                         *s = NORMAL;
-                        isDisplayLocked = false;
+                        isDisplaysLocked = false;
                     }
                 }
             } else {
@@ -260,20 +159,16 @@ int main(void)
                 if (curr_MIDI_val != knobs[i].value) {
                     knobs[i].value = curr_MIDI_val;
                     ssd1306_WriteKnob(&knobs[i]);
-
                     if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
                     if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
                 }
             }
-
         }
-
     }
 
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         Knob_Free(&knobs[i]);
     }
-
 }
 
 /* USER CODE END WHILE */
@@ -533,6 +428,99 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void MenuStateMachine(State *s) {
+    switch (*s) {
+    case NORMAL:
+        if (!isDisplaysLocked) {
+            ssd1306_WriteAllKnobs();
+            isDisplaysLocked = true;
+        }
+
+        for (uint8_t i = 0; i < NUM_BUTTONS - 1; i++) {
+            if (Button_IsDown(i)) {
+                LED_Off(knobPage);
+                knobPage = i;
+                break;
+            }
+        }
+        LED_AllOff();
+        LED_On(knobPage);
+        if (Button_IsDown(BUTTON_MENU)) {
+            *s = MENU;
+        }
+        break;
+    case MENU:
+        if (!isDisplaysLocked) {
+            ssd1306_WriteMainMenu();
+            isDisplaysLocked = true;
+        }
+
+        LED_AllOff();
+        LED_On(BUTTON_MENU);
+
+        if (Button_IsDown(BUTTON_MENU)) *s = NORMAL;
+        else if (Button_IsDown(BUTTON_1)) *s = LOAD_PRESET;
+        else if (Button_IsDown(BUTTON_2)) *s = LOAD_PATCH;
+        else if (Button_IsDown(BUTTON_3)) *s = SAVE_PATCH;
+
+        Button_Ignore(BUTTON_4);
+        Button_Ignore(BUTTON_5);
+        break;
+    case LOAD_PRESET:
+        SD_FetchPresetNames();
+        if (!isDisplaysLocked) {
+            ssd1306_WritePresets();
+            isDisplaysLocked = true;
+        }
+        isPresetFilenamesLoaded = true;
+
+        for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
+            adcAveragedPrev[i] = adcAveraged[i];
+        }
+
+        LED_On(BUTTON_1);
+
+        if (Button_IsDown(BUTTON_MENU)) *s = MENU;
+
+        Button_Ignore(BUTTON_1);
+        Button_Ignore(BUTTON_2);
+        Button_Ignore(BUTTON_3);
+
+        break;
+    case LOAD_PATCH:
+        if (!isDisplaysLocked) {
+            ssd1306_FillAll(Black);
+            isDisplaysLocked = true;
+        }
+        isPatchFilenamesLoaded = true;
+
+        LED_On(BUTTON_2);
+
+        if (Button_IsDown(BUTTON_MENU)) *s = MENU;
+
+        Button_Ignore(BUTTON_1);
+        Button_Ignore(BUTTON_2);
+        Button_Ignore(BUTTON_3);
+
+        break;
+    case SAVE_PATCH:
+        if (!isDisplaysLocked) {
+            ssd1306_FillAll(Black);
+            isDisplaysLocked = true;
+        }
+
+        LED_On(BUTTON_3);
+
+        if (Button_IsDown(BUTTON_MENU)) *s = MENU;
+
+        Button_Ignore(BUTTON_1);
+        Button_Ignore(BUTTON_2);
+        Button_Ignore(BUTTON_3);
+
+        break;
+    }
+}
+
 void ADC_MuxSelect(uint8_t c) {
     if (c > NUM_ADC_CHANNELS) return;
 

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include "ssd1306.h"
@@ -6,10 +7,14 @@
 // Screenbuffer
 static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
 
+// Menu items to display
 static char menuItems[3][MAX_LABEL_CHARS + 1] = { "Load Preset", "Load Patch", "Save Patch" };
 
 // Screen object
 static SSD1306_t SSD1306;
+
+// Used to prevent display updates when in menus
+bool isDisplaysLocked = false;
 
 //  Send a byte to the command register
 static uint8_t ssd1306_WriteCommand(uint8_t command) {

@@ -1,4 +1,7 @@
 #include "preset.h"
+#include "ffconf.h"
+
+char presetNames[NUM_KNOBS][MAX_LABEL_CHARS + 1];
 
 void Preset_GetName(char *file_buffer, char *name_buffer) {
     cJSON *preset_json = cJSON_Parse(file_buffer);

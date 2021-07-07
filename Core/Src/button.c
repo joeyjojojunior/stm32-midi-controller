@@ -4,9 +4,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "ssd1306.h"
 #include "button.h"
 #include "main.h"
 
+volatile bool btnDown[NUM_BUTTONS] = { false };
 uint8_t btnCount[NUM_BUTTONS] = { 0 };
 uint8_t btnState[NUM_BUTTONS] = { GPIO_PIN_SET };
 uint16_t btnPins[] = { Button_1_Pin, Button_2_Pin, Button_3_Pin, Button_4_Pin, Button_5_Pin, Button_6_Pin };
@@ -36,7 +38,7 @@ bool Button_IsDown(uint8_t i) {
     bool ret = btnDown[i];
     if (ret) {
         btnDown[i] = false;
-        isDisplayLocked = false;
+        isDisplaysLocked = false;
     }
     return ret;
 }
