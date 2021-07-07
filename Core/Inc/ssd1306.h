@@ -11,10 +11,10 @@
  *     - Font_16x26
  *
  */
-
 #ifndef _SSD1306_H
 #define _SSD1306_H
 
+#include <stdbool.h>
 #include "stm32f4xx_hal.h"
 #include "fonts.h"
 #include "knob.h"
@@ -23,12 +23,12 @@
 #define NUM_COLS 1
 #define NUM_ROWS 4
 
-// i2c address
+// I2C Display address
 #ifndef SSD1306_I2C_ADDR
 #define SSD1306_I2C_ADDR        0x78
 #endif // SSD1306_I2C_ADDR
 
-// i2c mux addresses
+// I2C Mux addresses
 #define I2C_MUX_MASTER_ADDR 0x71 << 1
 #define I2C_MUX_SLAVE_ADDR 0x70 << 1
 
@@ -42,9 +42,7 @@
 #define SSD1306_HEIGHT          64
 #endif // SSD1306_HEIGHT
 
-//
 //  Enumeration for screen colors
-//
 typedef enum {
     Black = 0x00,   // Black color, no pixel
     White = 0x01,   // Pixel is set. Color depends on LCD
@@ -53,9 +51,7 @@ typedef enum {
 extern I2C_HandleTypeDef hi2c1;
 extern bool isDisplaysLocked;
 
-//
 //  Struct to store transformations
-//
 typedef struct {
     uint16_t CurrentX;
     uint16_t CurrentY;
@@ -63,10 +59,7 @@ typedef struct {
     uint8_t Initialized;
 } SSD1306_t;
 
-//
 //  Function definitions
-//
-
 uint8_t ssd1306_Init(Knob *k);
 void ssd1306_Fill(SSD1306_COLOR color);
 void ssd1306_FillAll(SSD1306_COLOR color);
@@ -74,10 +67,10 @@ void ssd1306_UpdateScreen();
 void ssd1306_WriteAllKnobs();
 void ssd1306_WriteKnob(Knob *k);
 void ssd1306_WriteMainMenu();
+void ssd1306_WritePresets();
 void ssd1306_DrawPixel(uint8_t x, uint8_t y, SSD1306_COLOR color);
 char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color);
 char ssd1306_WriteString(char* str, FontDef Font, SSD1306_COLOR color);
-void ssd1306_WritePresets();
 void ssd1306_WriteErrorCode(char *label, uint8_t y, uint8_t err_code);
 void ssd1306_SetCursor(uint8_t x, uint8_t y);
 void ssd1306_AdjustBrightness(uint8_t brightness);

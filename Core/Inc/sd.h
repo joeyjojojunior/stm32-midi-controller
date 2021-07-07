@@ -2,12 +2,10 @@
  * sd.h
  */
 #include <stdlib.h>
-#include "main.h"
+#include <stdbool.h>
 #include "fatfs.h"
 #include "knob.h"
 #include "preset.h"
-
-#define MAX_LFN_CHARS 255
 
 #ifndef INC_SD_H_
 #define INC_SD_H_

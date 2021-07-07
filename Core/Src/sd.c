@@ -1,7 +1,6 @@
 /*
  * sd.c
  */
-//#include "stm32f4xx_hal.h"
 #include "sd.h"
 #include "ssd1306.h"
 

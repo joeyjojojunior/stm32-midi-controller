@@ -1,7 +1,6 @@
 /*
  * adc.h
  */
-
 #include <stdint.h>
 #include "main.h"
 #include "knob.h"
@@ -15,8 +14,6 @@
 extern ADC_HandleTypeDef hadc1;
 extern uint16_t adcAveraged[NUM_ADC_CHANNELS];
 extern uint16_t adcAveragedPrev[NUM_KNOBS];
-extern const uint32_t adcChannels[NUM_ADC_CHANNELS];
-extern const uint16_t AMUXPins[4];
 
 void ADC_ReadKnobs();
 void ADC_MuxSelect(uint8_t c);

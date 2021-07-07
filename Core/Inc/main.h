@@ -32,13 +32,11 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdbool.h>
-
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-typedef enum { BUTTON_1 = 0, BUTTON_2, BUTTON_3, BUTTON_4, BUTTON_5, BUTTON_MENU } Buttons;
+typedef const enum { BUTTON_1 = 0, BUTTON_2, BUTTON_3, BUTTON_4, BUTTON_5, BUTTON_MENU } Buttons;
 typedef enum { NORMAL = 0, MENU, LOAD_PRESET, LOAD_PATCH, SAVE_PATCH} State;
 /* USER CODE END ET */
 
@@ -56,7 +54,6 @@ typedef enum { NORMAL = 0, MENU, LOAD_PRESET, LOAD_PATCH, SAVE_PATCH} State;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -99,6 +96,7 @@ void Error_Handler(void);
 #define AMUX_S3_Pin GPIO_PIN_9
 #define AMUX_S3_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+#define KNOB_SELECT_THRESHOLD 5
 #define NUM_ROWS 4
 #define NUM_COLS 1
 #define NUM_PAGES 5

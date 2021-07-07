@@ -1,8 +1,7 @@
+#include "ssd1306.h"
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include "ssd1306.h"
 
 // Screenbuffer
 static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
@@ -157,19 +156,19 @@ void ssd1306_WriteKnob(Knob *k) {
 
     // Draw main label
     len_label = strlen(k->label);
-    x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
-    y = (float) y_remaining / 3 + (Font_10x18.FontHeight / 4);
+    x = (SSD1306_WIDTH - len_label * Font_11x18.FontWidth) / 2;
+    y = (float) y_remaining / 3 + (Font_11x18.FontHeight / 4);
     ssd1306_SetCursor(x, y);
-    ssd1306_WriteString(k->label, Font_10x18, White);
+    ssd1306_WriteString(k->label, Font_11x18, White);
 
     // If the max number of values is restricted, we want to use
     // sub labels for each choice (e.g. osc. wave selection)
     uint8_t sl_index = (k->max_values < MIDI_MAX + 1) ? k->value : 0;
     len_label = strlen(k->sub_labels[sl_index]);
-    x = (SSD1306_WIDTH - len_label * Font_10x18.FontWidth) / 2;
-    y = SSD1306_HEIGHT - Font_10x18.FontHeight - 1;
+    x = (SSD1306_WIDTH - len_label * Font_11x18.FontWidth) / 2;
+    y = SSD1306_HEIGHT - Font_11x18.FontHeight - 1;
     ssd1306_SetCursor(x, y);
-    ssd1306_WriteString(k->sub_labels[sl_index], Font_10x18, White);
+    ssd1306_WriteString(k->sub_labels[sl_index], Font_11x18, White);
 
     ssd1306_UpdateScreen();
 }
@@ -179,10 +178,10 @@ void ssd1306_WriteMainMenu() {
     for (uint8_t i = 0; i < 3; i++) {
         ssd1306_Select(&knobs[i]);
         ssd1306_Fill(Black);
-        uint8_t x = (SSD1306_WIDTH - strlen(menuItems[i]) * Font_10x18.FontWidth) / 2;
-        uint8_t y = SSD1306_HEIGHT / 2 - Font_10x18.FontHeight / 2;
+        uint8_t x = (SSD1306_WIDTH - strlen(menuItems[i]) * Font_11x18.FontWidth) / 2;
+        uint8_t y = SSD1306_HEIGHT / 2 - Font_11x18.FontHeight / 2;
         ssd1306_SetCursor(x,y);
-        ssd1306_WriteString(menuItems[i], Font_10x18, White);
+        ssd1306_WriteString(menuItems[i], Font_11x18, White);
         ssd1306_UpdateScreen();
     }
 }
@@ -191,10 +190,10 @@ void ssd1306_WritePresets() {
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         ssd1306_Select(&knobs[i]);
         ssd1306_Fill(Black);
-        uint8_t x = (SSD1306_WIDTH - strlen(presetNames[i]) * Font_10x18.FontWidth) / 2;
-        uint8_t y = SSD1306_HEIGHT / 2 - Font_10x18.FontHeight / 2;
+        uint8_t x = (SSD1306_WIDTH - strlen(presetNames[i]) * Font_11x18.FontWidth) / 2;
+        uint8_t y = SSD1306_HEIGHT / 2 - Font_11x18.FontHeight / 2;
         ssd1306_SetCursor(x, y);
-        ssd1306_WriteString(presetNames[i], Font_10x18, White);
+        ssd1306_WriteString(presetNames[i], Font_11x18, White);
         ssd1306_UpdateScreen();
     }
 }
@@ -283,7 +282,6 @@ void ssd1306_WriteErrorCode(char *label, uint8_t y, uint8_t err_code) {
     ssd1306_WriteString(err_str, Font_7x10, White);
 
     ssd1306_UpdateScreen();
-
 }
 
 //  Invert background/foreground colors

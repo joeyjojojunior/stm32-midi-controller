@@ -11,7 +11,7 @@
 volatile bool btnDown[NUM_BUTTONS] = { false };
 uint8_t btnCount[NUM_BUTTONS] = { 0 };
 uint8_t btnState[NUM_BUTTONS] = { GPIO_PIN_SET };
-uint16_t btnPins[] = { Button_1_Pin, Button_2_Pin, Button_3_Pin, Button_4_Pin, Button_5_Pin, Button_6_Pin };
+uint16_t const btnPins[] = { Button_1_Pin, Button_2_Pin, Button_3_Pin, Button_4_Pin, Button_5_Pin, Button_6_Pin };
 
 void Button_Debounce() {
     for (uint8_t i = 0; i < NUM_BUTTONS; i++) {

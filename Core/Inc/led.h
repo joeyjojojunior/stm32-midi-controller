@@ -10,8 +10,6 @@
 
 #define NUM_LEDS 6
 
-extern uint16_t LEDPins[];
-
 void LED_On(uint8_t i);
 void LED_Off(uint8_t i);
 void LED_AllOff();

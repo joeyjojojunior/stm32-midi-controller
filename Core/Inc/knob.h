@@ -25,7 +25,7 @@ typedef struct Knob {
 	uint8_t isLocked;
 } Knob;
 
-extern Knob knobs[4];
+extern Knob knobs[NUM_KNOBS];
 
 void Knob_Free(Knob *k);
 uint8_t Knob_Map(Knob *k, uint8_t value, uint8_t m);

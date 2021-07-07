@@ -8,7 +8,6 @@
 #define NUM_BUTTONS 6
 
 extern volatile bool btnDown[];
-extern uint16_t btnPins[];
 
 void Button_Debounce();
 bool Button_IsDown(uint8_t i);
