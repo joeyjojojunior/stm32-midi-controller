@@ -31,6 +31,7 @@
 #include "sd.h"
 #include "midi.h"
 #include "led.h"
+#include "button.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,16 +62,15 @@ char presetNames[NUM_KNOBS][MAX_LABEL_CHARS + 1];
 uint16_t adcAveraged[NUM_ADC_CHANNELS] = { 0 };
 uint16_t adcAveragedPrev[NUM_KNOBS] = { 0 };
 const uint32_t adcChannels[NUM_ADC_CHANNELS] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
-
 const uint16_t AMUXPins[4] = { AMUX_S0_Pin, AMUX_S1_Pin, AMUX_S2_Pin, AMUX_S3_Pin };
 
 bool isPresetsLoaded = false;
 bool isPatchesLoaded = false;
-
-volatile bool btnDown[NUM_BUTTONS] = { false };
 bool isDisplayLocked = false;
 
 uint8_t page = 0;
+
+volatile bool btnDown[NUM_BUTTONS] = { false };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,18 +83,7 @@ static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 
 
-bool isButtonDown(uint8_t i) {
-    bool ret = btnDown[i];
-    if (ret) {
-        btnDown[i] = false;
-        isDisplayLocked = false;
-    }
-    return ret;
-}
 
-void Button_Ignore(uint8_t i) {
-    btnDown[i] = false;
-}
 
 void ADC_ReadKnobs();
 void ADC_MuxSelect(uint8_t c);
@@ -163,7 +152,7 @@ int main(void)
             }
 
             for (uint8_t i = 0; i < NUM_BUTTONS - 1; i++) {
-                if (isButtonDown(i)) {
+                if (Button_IsDown(i)) {
                     LED_Off(page);
                     page = i;
                     break;
@@ -171,7 +160,7 @@ int main(void)
             }
             LED_AllOff();
             LED_On(page);
-            if (isButtonDown(BUTTON_MENU)) {
+            if (Button_IsDown(BUTTON_MENU)) {
                 *s = MENU;
             }
             break;
@@ -184,10 +173,10 @@ int main(void)
             LED_AllOff();
             LED_On(BUTTON_MENU);
 
-            if (isButtonDown(BUTTON_MENU)) *s = NORMAL;
-            else if (isButtonDown(BUTTON_1)) *s = LOAD_PRESET;
-            else if (isButtonDown(BUTTON_2)) *s = LOAD_PATCH;
-            else if (isButtonDown(BUTTON_3)) *s = SAVE_PATCH;
+            if (Button_IsDown(BUTTON_MENU)) *s = NORMAL;
+            else if (Button_IsDown(BUTTON_1)) *s = LOAD_PRESET;
+            else if (Button_IsDown(BUTTON_2)) *s = LOAD_PATCH;
+            else if (Button_IsDown(BUTTON_3)) *s = SAVE_PATCH;
 
             Button_Ignore(BUTTON_4);
             Button_Ignore(BUTTON_5);
@@ -206,7 +195,7 @@ int main(void)
 
             LED_On(BUTTON_1);
 
-            if (isButtonDown(BUTTON_MENU)) *s = MENU;
+            if (Button_IsDown(BUTTON_MENU)) *s = MENU;
 
             Button_Ignore(BUTTON_1);
             Button_Ignore(BUTTON_2);
@@ -222,7 +211,7 @@ int main(void)
 
             LED_On(BUTTON_2);
 
-            if (isButtonDown(BUTTON_MENU)) *s = MENU;
+            if (Button_IsDown(BUTTON_MENU)) *s = MENU;
 
             Button_Ignore(BUTTON_1);
             Button_Ignore(BUTTON_2);
@@ -237,7 +226,7 @@ int main(void)
 
             LED_On(BUTTON_3);
 
-            if (isButtonDown(BUTTON_MENU)) *s = MENU;
+            if (Button_IsDown(BUTTON_MENU)) *s = MENU;
 
             Button_Ignore(BUTTON_1);
             Button_Ignore(BUTTON_2);

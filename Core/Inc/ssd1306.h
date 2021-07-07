@@ -68,11 +68,13 @@ typedef struct {
 
 uint8_t ssd1306_Init(Knob *k);
 void ssd1306_Fill(SSD1306_COLOR color);
+void ssd1306_FillAll(SSD1306_COLOR color);
 void ssd1306_UpdateScreen();
+void ssd1306_WriteAllKnobs();
 void ssd1306_WriteKnob(Knob *k);
+void ssd1306_WriteMainMenu();
 void ssd1306_DrawPixel(uint8_t x, uint8_t y, SSD1306_COLOR color);
 char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color);
-void ssd1306_WriteAllKnobs();
 char ssd1306_WriteString(char* str, FontDef Font, SSD1306_COLOR color);
 void ssd1306_WritePresets();
 void ssd1306_WriteErrorCode(char *label, uint8_t y, uint8_t err_code);
