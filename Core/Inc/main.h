@@ -99,6 +99,8 @@ void Error_Handler(void);
 #define AMUX_S3_Pin GPIO_PIN_9
 #define AMUX_S3_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+#define NUM_ROWS 4
+#define NUM_COLS 1
 #define NUM_PAGES 5
 #define GPIO_PORT_AMUX GPIOB
 #define GPIO_PORT_BUTTONS_1TO5 GPIOA

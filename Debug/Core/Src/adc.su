@@ -1,0 +1,2 @@
+adc.c:12:6:ADC_MuxSelect	24	static
+adc.c:24:6:ADC_ReadKnobs	96	static

@@ -32,6 +32,7 @@
 #include "midi.h"
 #include "led.h"
 #include "button.h"
+#include "adc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,8 +41,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NUM_ADC_SAMPLES 32
-#define NUM_ADC_CHANNELS 4
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,14 +52,10 @@ ADC_HandleTypeDef hadc1;
 RTC_HandleTypeDef hrtc;
 I2C_HandleTypeDef hi2c1;
 SD_HandleTypeDef hsd;
+
 /* USER CODE BEGIN PV */
 State state = NORMAL;
 uint8_t knobPage = 0;
-
-uint16_t adcAveraged[NUM_ADC_CHANNELS] = { 0 };
-uint16_t adcAveragedPrev[NUM_KNOBS] = { 0 };
-const uint32_t adcChannels[NUM_ADC_CHANNELS] = { ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2, ADC_CHANNEL_3 };
-const uint16_t AMUXPins[4] = { AMUX_S0_Pin, AMUX_S1_Pin, AMUX_S2_Pin, AMUX_S3_Pin };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -72,8 +67,6 @@ static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 void MenuStateMachine(State *s);
-void ADC_ReadKnobs();
-void ADC_MuxSelect(uint8_t c);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -134,33 +127,37 @@ int main(void)
 
     while (1) {
         MenuStateMachine(s);
-        ADC_ReadKnobs();
 
-        for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
-            if (*s != NORMAL) {
-                uint16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
-                if (knobDiff > 5) {
-                    bool loadComplete = false;
-                    if (isPresetFilenamesLoaded) {
-                        loadComplete = SD_LoadPreset(presetFilenames[i]);
-                        isPresetFilenamesLoaded = false;
-                    } else if (isPatchFilenamesLoaded) {
-                        //SD_LoadPatch(patchFilenames[i]);
-                        isPatchFilenamesLoaded = false;
-                    }
+        for (uint8_t col = 0; col < NUM_COLS; col++) {
+            ADC_ReadKnobs();
 
-                    if (loadComplete) {
-                        *s = NORMAL;
-                        isDisplaysLocked = false;
+            for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
+                if (*s != NORMAL) {
+                    uint16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
+                    if (knobDiff > 5) {
+                        bool loadComplete = false;
+                        if (isPresetFilenamesLoaded) {
+                            loadComplete = SD_LoadPreset(presetFilenames[i]);
+                            isPresetFilenamesLoaded = false;
+                        } else if (isPatchFilenamesLoaded) {
+                            //loadComplete = SD_LoadPatch(patchFilenames[i]);
+                            isPatchFilenamesLoaded = false;
+                        }
+
+                        if (loadComplete) {
+                            *s = NORMAL;
+                            isDisplaysLocked = false;
+                            //ssd1306_WriteLoadNotification();
+                        }
                     }
-                }
-            } else {
-                uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
-                if (curr_MIDI_val != knobs[i].value) {
-                    knobs[i].value = curr_MIDI_val;
-                    ssd1306_WriteKnob(&knobs[i]);
-                    if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
-                    if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
+                } else {
+                    uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
+                    if (curr_MIDI_val != knobs[i].value) {
+                        knobs[i].value = curr_MIDI_val;
+                        ssd1306_WriteKnob(&knobs[i]);
+                        if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
+                        if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
+                    }
                 }
             }
         }
@@ -302,8 +299,7 @@ static void MX_I2C1_Init(void)
     hi2c1.Init.OwnAddress2 = 0;
     hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
     hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-    if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-            {
+    if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
         Error_Handler();
     }
     /* USER CODE BEGIN I2C1_Init 2 */
@@ -336,8 +332,7 @@ static void MX_RTC_Init(void)
     hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
     hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
     hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-    if (HAL_RTC_Init(&hrtc) != HAL_OK)
-            {
+    if (HAL_RTC_Init(&hrtc) != HAL_OK) {
         Error_Handler();
     }
     /* USER CODE BEGIN RTC_Init 2 */
@@ -436,6 +431,7 @@ void MenuStateMachine(State *s) {
             isDisplaysLocked = true;
         }
 
+        // Handle page switch
         for (uint8_t i = 0; i < NUM_BUTTONS - 1; i++) {
             if (Button_IsDown(i)) {
                 LED_Off(knobPage);
@@ -443,11 +439,11 @@ void MenuStateMachine(State *s) {
                 break;
             }
         }
+
         LED_AllOff();
         LED_On(knobPage);
-        if (Button_IsDown(BUTTON_MENU)) {
-            *s = MENU;
-        }
+
+        if (Button_IsDown(BUTTON_MENU)) *s = MENU;
         break;
     case MENU:
         if (!isDisplaysLocked) {
@@ -468,6 +464,7 @@ void MenuStateMachine(State *s) {
         break;
     case LOAD_PRESET:
         SD_FetchPresetNames();
+
         if (!isDisplaysLocked) {
             ssd1306_WritePresets();
             isDisplaysLocked = true;
@@ -485,10 +482,10 @@ void MenuStateMachine(State *s) {
         Button_Ignore(BUTTON_1);
         Button_Ignore(BUTTON_2);
         Button_Ignore(BUTTON_3);
-
         break;
     case LOAD_PATCH:
         if (!isDisplaysLocked) {
+            //ssd1306_WritePatches();
             ssd1306_FillAll(Black);
             isDisplaysLocked = true;
         }
@@ -501,10 +498,10 @@ void MenuStateMachine(State *s) {
         Button_Ignore(BUTTON_1);
         Button_Ignore(BUTTON_2);
         Button_Ignore(BUTTON_3);
-
         break;
     case SAVE_PATCH:
         if (!isDisplaysLocked) {
+            //ssd1306_WriteSaveNotification();
             ssd1306_FillAll(Black);
             isDisplaysLocked = true;
         }
@@ -516,53 +513,7 @@ void MenuStateMachine(State *s) {
         Button_Ignore(BUTTON_1);
         Button_Ignore(BUTTON_2);
         Button_Ignore(BUTTON_3);
-
         break;
-    }
-}
-
-void ADC_MuxSelect(uint8_t c) {
-    if (c > NUM_ADC_CHANNELS) return;
-
-    for (int i = 0; i < NUM_ADC_CHANNELS; i++) {
-        if (c & (1 << i)) {
-            HAL_GPIO_WritePin(GPIO_PORT_AMUX, AMUXPins[i], GPIO_PIN_SET);
-        } else {
-            HAL_GPIO_WritePin(GPIO_PORT_AMUX, AMUXPins[i], GPIO_PIN_RESET);
-        }
-    }
-}
-
-void ADC_ReadKnobs() {
-    for (uint8_t channel = 0; channel < NUM_ADC_CHANNELS; channel++) {
-        uint16_t adcBuf[NUM_ADC_SAMPLES];
-
-        ADC_MuxSelect(channel);
-
-        // Select channel
-        ADC_ChannelConfTypeDef sConfig = { 0 };
-        sConfig.Channel = adcChannels[channel];
-        sConfig.Rank = 1;
-        sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-        if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
-            Error_Handler();
-        }
-
-        // Sample the channel NUM_ADC_SAMPLES times to the buffer
-        HAL_ADC_Start(&hadc1);
-        for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
-            HAL_ADC_PollForConversion(&hadc1, 1000);
-            adcBuf[i] = HAL_ADC_GetValue(&hadc1);
-        }
-        HAL_ADC_Stop(&hadc1);
-
-        // Calculate average of all samples for the channel
-        uint16_t adc_sum = 0;
-        for (uint8_t i = 0; i < NUM_ADC_SAMPLES; i++) {
-            adc_sum += adcBuf[i];
-        }
-
-        adcAveraged[channel] = adc_sum / NUM_ADC_SAMPLES;
     }
 }
 /* USER CODE END 4 */
