@@ -7,43 +7,43 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         00013b9c  080001a0  080001a0  000101a0  2**4
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       00001e44  08013d40  08013d40  00023d40  2**3
+  2 .rodata       00001e0c  08013d40  08013d40  00023d40  2**3
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM.extab    00000000  08015b84  08015b84  0003034c  2**0
+  3 .ARM.extab    00000000  08015b4c  08015b4c  0003034c  2**0
                   CONTENTS
-  4 .ARM          00000008  08015b84  08015b84  00025b84  2**2
+  4 .ARM          00000008  08015b4c  08015b4c  00025b4c  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  5 .preinit_array 00000000  08015b8c  08015b8c  0003034c  2**0
+  5 .preinit_array 00000000  08015b54  08015b54  0003034c  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  08015b8c  08015b8c  00025b8c  2**2
+  6 .init_array   00000004  08015b54  08015b54  00025b54  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  7 .fini_array   00000004  08015b90  08015b90  00025b90  2**2
+  7 .fini_array   00000004  08015b58  08015b58  00025b58  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  8 .data         0000034c  20000000  08015b94  00030000  2**2
+  8 .data         0000034c  20000000  08015b5c  00030000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          000035bc  2000034c  08015ee0  0003034c  2**2
+  9 .bss          000035bc  2000034c  08015ea8  0003034c  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  20003908  08015ee0  00033908  2**0
+ 10 ._user_heap_stack 00000600  20003908  08015ea8  00033908  2**0
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  0003034c  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0002fb8c  00000000  00000000  0003037c  2**0
+ 12 .debug_info   0002fd7d  00000000  00000000  0003037c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 0000633b  00000000  00000000  0005ff08  2**0
+ 13 .debug_abbrev 00006452  00000000  00000000  000600f9  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00001d68  00000000  00000000  00066248  2**3
+ 14 .debug_aranges 00001d68  00000000  00000000  00066550  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_macro  00021122  00000000  00000000  00067fb0  2**0
+ 15 .debug_macro  000213a5  00000000  00000000  000682b8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_line   00028c06  00000000  00000000  000890d2  2**0
+ 16 .debug_line   0002930c  00000000  00000000  0008965d  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_str    000a6f3b  00000000  00000000  000b1cd8  2**0
+ 17 .debug_str    000a6f3f  00000000  00000000  000b2969  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .comment      00000053  00000000  00000000  00158c13  2**0
+ 18 .comment      00000053  00000000  00000000  001598a8  2**0
                   CONTENTS, READONLY
- 19 .debug_ranges 00001b70  00000000  00000000  00158c68  2**3
+ 19 .debug_ranges 00001b60  00000000  00000000  00159900  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_frame  00008e14  00000000  00000000  0015a7d8  2**2
+ 20 .debug_frame  00008db0  00000000  00000000  0015b460  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1349,198 +1349,198 @@ uint8_t Knob_Map(Knob *k, uint8_t value, uint8_t m) {
  800101a:	f85d 7b04 	ldr.w	r7, [sp], #4
  800101e:	4770      	bx	lr
 
-08001020 <__NVIC_SetPriority>:
+08001020 <LED_On>:
+
+#include "led.h"
+
+uint16_t LEDPins[] = { LED_1_Pin, LED_2_Pin, LED_3_Pin, LED_4_Pin, LED_5_Pin, LED_6_Pin };
+
+void LED_On(uint8_t i) {
+ 8001020:	b580      	push	{r7, lr}
+ 8001022:	b082      	sub	sp, #8
+ 8001024:	af00      	add	r7, sp, #0
+ 8001026:	4603      	mov	r3, r0
+ 8001028:	71fb      	strb	r3, [r7, #7]
+    HAL_GPIO_WritePin(GPIO_PORT_LEDS, LEDPins[i], GPIO_PIN_SET);
+ 800102a:	79fb      	ldrb	r3, [r7, #7]
+ 800102c:	4a05      	ldr	r2, [pc, #20]	; (8001044 <LED_On+0x24>)
+ 800102e:	f832 3013 	ldrh.w	r3, [r2, r3, lsl #1]
+ 8001032:	2201      	movs	r2, #1
+ 8001034:	4619      	mov	r1, r3
+ 8001036:	4804      	ldr	r0, [pc, #16]	; (8001048 <LED_On+0x28>)
+ 8001038:	f003 f928 	bl	800428c <HAL_GPIO_WritePin>
+}
+ 800103c:	bf00      	nop
+ 800103e:	3708      	adds	r7, #8
+ 8001040:	46bd      	mov	sp, r7
+ 8001042:	bd80      	pop	{r7, pc}
+ 8001044:	20000010 	.word	0x20000010
+ 8001048:	40020400 	.word	0x40020400
+
+0800104c <LED_Off>:
+
+void LED_Off(uint8_t i) {
+ 800104c:	b580      	push	{r7, lr}
+ 800104e:	b082      	sub	sp, #8
+ 8001050:	af00      	add	r7, sp, #0
+ 8001052:	4603      	mov	r3, r0
+ 8001054:	71fb      	strb	r3, [r7, #7]
+    HAL_GPIO_WritePin(GPIO_PORT_LEDS, LEDPins[i], GPIO_PIN_RESET);
+ 8001056:	79fb      	ldrb	r3, [r7, #7]
+ 8001058:	4a05      	ldr	r2, [pc, #20]	; (8001070 <LED_Off+0x24>)
+ 800105a:	f832 3013 	ldrh.w	r3, [r2, r3, lsl #1]
+ 800105e:	2200      	movs	r2, #0
+ 8001060:	4619      	mov	r1, r3
+ 8001062:	4804      	ldr	r0, [pc, #16]	; (8001074 <LED_Off+0x28>)
+ 8001064:	f003 f912 	bl	800428c <HAL_GPIO_WritePin>
+}
+ 8001068:	bf00      	nop
+ 800106a:	3708      	adds	r7, #8
+ 800106c:	46bd      	mov	sp, r7
+ 800106e:	bd80      	pop	{r7, pc}
+ 8001070:	20000010 	.word	0x20000010
+ 8001074:	40020400 	.word	0x40020400
+
+08001078 <LED_AllOff>:
+
+void LED_AllOff() {
+ 8001078:	b580      	push	{r7, lr}
+ 800107a:	b082      	sub	sp, #8
+ 800107c:	af00      	add	r7, sp, #0
+    for (uint8_t i = 0; i < NUM_LEDS; i++) {
+ 800107e:	2300      	movs	r3, #0
+ 8001080:	71fb      	strb	r3, [r7, #7]
+ 8001082:	e006      	b.n	8001092 <LED_AllOff+0x1a>
+        LED_Off(i);
+ 8001084:	79fb      	ldrb	r3, [r7, #7]
+ 8001086:	4618      	mov	r0, r3
+ 8001088:	f7ff ffe0 	bl	800104c <LED_Off>
+    for (uint8_t i = 0; i < NUM_LEDS; i++) {
+ 800108c:	79fb      	ldrb	r3, [r7, #7]
+ 800108e:	3301      	adds	r3, #1
+ 8001090:	71fb      	strb	r3, [r7, #7]
+ 8001092:	79fb      	ldrb	r3, [r7, #7]
+ 8001094:	2b05      	cmp	r3, #5
+ 8001096:	d9f5      	bls.n	8001084 <LED_AllOff+0xc>
+    }
+}
+ 8001098:	bf00      	nop
+ 800109a:	bf00      	nop
+ 800109c:	3708      	adds	r7, #8
+ 800109e:	46bd      	mov	sp, r7
+ 80010a0:	bd80      	pop	{r7, pc}
+	...
+
+080010a4 <__NVIC_SetPriority>:
   \param [in]      IRQn  Interrupt number.
   \param [in]  priority  Priority to set.
   \note    The priority cannot be set for every processor exception.
  */
 __STATIC_INLINE void __NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
- 8001020:	b480      	push	{r7}
- 8001022:	b083      	sub	sp, #12
- 8001024:	af00      	add	r7, sp, #0
- 8001026:	4603      	mov	r3, r0
- 8001028:	6039      	str	r1, [r7, #0]
- 800102a:	71fb      	strb	r3, [r7, #7]
+ 80010a4:	b480      	push	{r7}
+ 80010a6:	b083      	sub	sp, #12
+ 80010a8:	af00      	add	r7, sp, #0
+ 80010aa:	4603      	mov	r3, r0
+ 80010ac:	6039      	str	r1, [r7, #0]
+ 80010ae:	71fb      	strb	r3, [r7, #7]
   if ((int32_t)(IRQn) >= 0)
- 800102c:	f997 3007 	ldrsb.w	r3, [r7, #7]
- 8001030:	2b00      	cmp	r3, #0
- 8001032:	db0a      	blt.n	800104a <__NVIC_SetPriority+0x2a>
+ 80010b0:	f997 3007 	ldrsb.w	r3, [r7, #7]
+ 80010b4:	2b00      	cmp	r3, #0
+ 80010b6:	db0a      	blt.n	80010ce <__NVIC_SetPriority+0x2a>
   {
     NVIC->IP[((uint32_t)IRQn)]               = (uint8_t)((priority << (8U - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL);
- 8001034:	683b      	ldr	r3, [r7, #0]
- 8001036:	b2da      	uxtb	r2, r3
- 8001038:	490c      	ldr	r1, [pc, #48]	; (800106c <__NVIC_SetPriority+0x4c>)
- 800103a:	f997 3007 	ldrsb.w	r3, [r7, #7]
- 800103e:	0112      	lsls	r2, r2, #4
- 8001040:	b2d2      	uxtb	r2, r2
- 8001042:	440b      	add	r3, r1
- 8001044:	f883 2300 	strb.w	r2, [r3, #768]	; 0x300
+ 80010b8:	683b      	ldr	r3, [r7, #0]
+ 80010ba:	b2da      	uxtb	r2, r3
+ 80010bc:	490c      	ldr	r1, [pc, #48]	; (80010f0 <__NVIC_SetPriority+0x4c>)
+ 80010be:	f997 3007 	ldrsb.w	r3, [r7, #7]
+ 80010c2:	0112      	lsls	r2, r2, #4
+ 80010c4:	b2d2      	uxtb	r2, r2
+ 80010c6:	440b      	add	r3, r1
+ 80010c8:	f883 2300 	strb.w	r2, [r3, #768]	; 0x300
   }
   else
   {
     SCB->SHP[(((uint32_t)IRQn) & 0xFUL)-4UL] = (uint8_t)((priority << (8U - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL);
   }
 }
- 8001048:	e00a      	b.n	8001060 <__NVIC_SetPriority+0x40>
+ 80010cc:	e00a      	b.n	80010e4 <__NVIC_SetPriority+0x40>
     SCB->SHP[(((uint32_t)IRQn) & 0xFUL)-4UL] = (uint8_t)((priority << (8U - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL);
- 800104a:	683b      	ldr	r3, [r7, #0]
- 800104c:	b2da      	uxtb	r2, r3
- 800104e:	4908      	ldr	r1, [pc, #32]	; (8001070 <__NVIC_SetPriority+0x50>)
- 8001050:	79fb      	ldrb	r3, [r7, #7]
- 8001052:	f003 030f 	and.w	r3, r3, #15
- 8001056:	3b04      	subs	r3, #4
- 8001058:	0112      	lsls	r2, r2, #4
- 800105a:	b2d2      	uxtb	r2, r2
- 800105c:	440b      	add	r3, r1
- 800105e:	761a      	strb	r2, [r3, #24]
+ 80010ce:	683b      	ldr	r3, [r7, #0]
+ 80010d0:	b2da      	uxtb	r2, r3
+ 80010d2:	4908      	ldr	r1, [pc, #32]	; (80010f4 <__NVIC_SetPriority+0x50>)
+ 80010d4:	79fb      	ldrb	r3, [r7, #7]
+ 80010d6:	f003 030f 	and.w	r3, r3, #15
+ 80010da:	3b04      	subs	r3, #4
+ 80010dc:	0112      	lsls	r2, r2, #4
+ 80010de:	b2d2      	uxtb	r2, r2
+ 80010e0:	440b      	add	r3, r1
+ 80010e2:	761a      	strb	r2, [r3, #24]
 }
- 8001060:	bf00      	nop
- 8001062:	370c      	adds	r7, #12
- 8001064:	46bd      	mov	sp, r7
- 8001066:	f85d 7b04 	ldr.w	r7, [sp], #4
- 800106a:	4770      	bx	lr
- 800106c:	e000e100 	.word	0xe000e100
- 8001070:	e000ed00 	.word	0xe000ed00
+ 80010e4:	bf00      	nop
+ 80010e6:	370c      	adds	r7, #12
+ 80010e8:	46bd      	mov	sp, r7
+ 80010ea:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 80010ee:	4770      	bx	lr
+ 80010f0:	e000e100 	.word	0xe000e100
+ 80010f4:	e000ed00 	.word	0xe000ed00
 
-08001074 <SysTick_Config>:
+080010f8 <SysTick_Config>:
   \note    When the variable <b>__Vendor_SysTickConfig</b> is set to 1, then the
            function <b>SysTick_Config</b> is not included. In this case, the file <b><i>device</i>.h</b>
            must contain a vendor-specific implementation of this function.
  */
 __STATIC_INLINE uint32_t SysTick_Config(uint32_t ticks)
 {
- 8001074:	b580      	push	{r7, lr}
- 8001076:	b082      	sub	sp, #8
- 8001078:	af00      	add	r7, sp, #0
- 800107a:	6078      	str	r0, [r7, #4]
+ 80010f8:	b580      	push	{r7, lr}
+ 80010fa:	b082      	sub	sp, #8
+ 80010fc:	af00      	add	r7, sp, #0
+ 80010fe:	6078      	str	r0, [r7, #4]
   if ((ticks - 1UL) > SysTick_LOAD_RELOAD_Msk)
- 800107c:	687b      	ldr	r3, [r7, #4]
- 800107e:	3b01      	subs	r3, #1
- 8001080:	f1b3 7f80 	cmp.w	r3, #16777216	; 0x1000000
- 8001084:	d301      	bcc.n	800108a <SysTick_Config+0x16>
+ 8001100:	687b      	ldr	r3, [r7, #4]
+ 8001102:	3b01      	subs	r3, #1
+ 8001104:	f1b3 7f80 	cmp.w	r3, #16777216	; 0x1000000
+ 8001108:	d301      	bcc.n	800110e <SysTick_Config+0x16>
   {
     return (1UL);                                                   /* Reload value impossible */
- 8001086:	2301      	movs	r3, #1
- 8001088:	e00f      	b.n	80010aa <SysTick_Config+0x36>
+ 800110a:	2301      	movs	r3, #1
+ 800110c:	e00f      	b.n	800112e <SysTick_Config+0x36>
   }
 
   SysTick->LOAD  = (uint32_t)(ticks - 1UL);                         /* set reload register */
- 800108a:	4a0a      	ldr	r2, [pc, #40]	; (80010b4 <SysTick_Config+0x40>)
- 800108c:	687b      	ldr	r3, [r7, #4]
- 800108e:	3b01      	subs	r3, #1
- 8001090:	6053      	str	r3, [r2, #4]
+ 800110e:	4a0a      	ldr	r2, [pc, #40]	; (8001138 <SysTick_Config+0x40>)
+ 8001110:	687b      	ldr	r3, [r7, #4]
+ 8001112:	3b01      	subs	r3, #1
+ 8001114:	6053      	str	r3, [r2, #4]
   NVIC_SetPriority (SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL); /* set Priority for Systick Interrupt */
- 8001092:	210f      	movs	r1, #15
- 8001094:	f04f 30ff 	mov.w	r0, #4294967295
- 8001098:	f7ff ffc2 	bl	8001020 <__NVIC_SetPriority>
+ 8001116:	210f      	movs	r1, #15
+ 8001118:	f04f 30ff 	mov.w	r0, #4294967295
+ 800111c:	f7ff ffc2 	bl	80010a4 <__NVIC_SetPriority>
   SysTick->VAL   = 0UL;                                             /* Load the SysTick Counter Value */
- 800109c:	4b05      	ldr	r3, [pc, #20]	; (80010b4 <SysTick_Config+0x40>)
- 800109e:	2200      	movs	r2, #0
- 80010a0:	609a      	str	r2, [r3, #8]
+ 8001120:	4b05      	ldr	r3, [pc, #20]	; (8001138 <SysTick_Config+0x40>)
+ 8001122:	2200      	movs	r2, #0
+ 8001124:	609a      	str	r2, [r3, #8]
   SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
- 80010a2:	4b04      	ldr	r3, [pc, #16]	; (80010b4 <SysTick_Config+0x40>)
- 80010a4:	2207      	movs	r2, #7
- 80010a6:	601a      	str	r2, [r3, #0]
+ 8001126:	4b04      	ldr	r3, [pc, #16]	; (8001138 <SysTick_Config+0x40>)
+ 8001128:	2207      	movs	r2, #7
+ 800112a:	601a      	str	r2, [r3, #0]
                    SysTick_CTRL_TICKINT_Msk   |
                    SysTick_CTRL_ENABLE_Msk;                         /* Enable SysTick IRQ and SysTick Timer */
   return (0UL);                                                     /* Function successful */
- 80010a8:	2300      	movs	r3, #0
+ 800112c:	2300      	movs	r3, #0
 }
- 80010aa:	4618      	mov	r0, r3
- 80010ac:	3708      	adds	r7, #8
- 80010ae:	46bd      	mov	sp, r7
- 80010b0:	bd80      	pop	{r7, pc}
- 80010b2:	bf00      	nop
- 80010b4:	e000e010 	.word	0xe000e010
+ 800112e:	4618      	mov	r0, r3
+ 8001130:	3708      	adds	r7, #8
+ 8001132:	46bd      	mov	sp, r7
+ 8001134:	bd80      	pop	{r7, pc}
+ 8001136:	bf00      	nop
+ 8001138:	e000e010 	.word	0xe000e010
 
-080010b8 <LED_On>:
-static void MX_ADC1_Init(void);
-static void MX_I2C1_Init(void);
+0800113c <isButtonDown>:
 static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-void LED_On(uint8_t i) {
- 80010b8:	b580      	push	{r7, lr}
- 80010ba:	b082      	sub	sp, #8
- 80010bc:	af00      	add	r7, sp, #0
- 80010be:	4603      	mov	r3, r0
- 80010c0:	71fb      	strb	r3, [r7, #7]
-    HAL_GPIO_WritePin(GPIO_PORT_LEDS, LEDPins[i], GPIO_PIN_SET);
- 80010c2:	79fb      	ldrb	r3, [r7, #7]
- 80010c4:	4a05      	ldr	r2, [pc, #20]	; (80010dc <LED_On+0x24>)
- 80010c6:	f832 3013 	ldrh.w	r3, [r2, r3, lsl #1]
- 80010ca:	2201      	movs	r2, #1
- 80010cc:	4619      	mov	r1, r3
- 80010ce:	4804      	ldr	r0, [pc, #16]	; (80010e0 <LED_On+0x28>)
- 80010d0:	f003 f8dc 	bl	800428c <HAL_GPIO_WritePin>
-}
- 80010d4:	bf00      	nop
- 80010d6:	3708      	adds	r7, #8
- 80010d8:	46bd      	mov	sp, r7
- 80010da:	bd80      	pop	{r7, pc}
- 80010dc:	20000054 	.word	0x20000054
- 80010e0:	40020400 	.word	0x40020400
 
-080010e4 <LED_Off>:
-
-void LED_Off(uint8_t i) {
- 80010e4:	b580      	push	{r7, lr}
- 80010e6:	b082      	sub	sp, #8
- 80010e8:	af00      	add	r7, sp, #0
- 80010ea:	4603      	mov	r3, r0
- 80010ec:	71fb      	strb	r3, [r7, #7]
-    HAL_GPIO_WritePin(GPIO_PORT_LEDS, LEDPins[i], GPIO_PIN_RESET);
- 80010ee:	79fb      	ldrb	r3, [r7, #7]
- 80010f0:	4a05      	ldr	r2, [pc, #20]	; (8001108 <LED_Off+0x24>)
- 80010f2:	f832 3013 	ldrh.w	r3, [r2, r3, lsl #1]
- 80010f6:	2200      	movs	r2, #0
- 80010f8:	4619      	mov	r1, r3
- 80010fa:	4804      	ldr	r0, [pc, #16]	; (800110c <LED_Off+0x28>)
- 80010fc:	f003 f8c6 	bl	800428c <HAL_GPIO_WritePin>
-}
- 8001100:	bf00      	nop
- 8001102:	3708      	adds	r7, #8
- 8001104:	46bd      	mov	sp, r7
- 8001106:	bd80      	pop	{r7, pc}
- 8001108:	20000054 	.word	0x20000054
- 800110c:	40020400 	.word	0x40020400
-
-08001110 <LED_AllOff>:
-
-void LED_AllOff() {
- 8001110:	b580      	push	{r7, lr}
- 8001112:	b082      	sub	sp, #8
- 8001114:	af00      	add	r7, sp, #0
-    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
- 8001116:	2300      	movs	r3, #0
- 8001118:	71fb      	strb	r3, [r7, #7]
- 800111a:	e006      	b.n	800112a <LED_AllOff+0x1a>
-        LED_Off(i);
- 800111c:	79fb      	ldrb	r3, [r7, #7]
- 800111e:	4618      	mov	r0, r3
- 8001120:	f7ff ffe0 	bl	80010e4 <LED_Off>
-    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
- 8001124:	79fb      	ldrb	r3, [r7, #7]
- 8001126:	3301      	adds	r3, #1
- 8001128:	71fb      	strb	r3, [r7, #7]
- 800112a:	79fb      	ldrb	r3, [r7, #7]
- 800112c:	2b05      	cmp	r3, #5
- 800112e:	d9f5      	bls.n	800111c <LED_AllOff+0xc>
-    }
-}
- 8001130:	bf00      	nop
- 8001132:	bf00      	nop
- 8001134:	3708      	adds	r7, #8
- 8001136:	46bd      	mov	sp, r7
- 8001138:	bd80      	pop	{r7, pc}
-	...
-
-0800113c <isButtonDown>:
-
-void LED_Toggle(uint8_t i) {
-    HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[i]);
-}
 
 bool isButtonDown(uint8_t i) {
  800113c:	b480      	push	{r7}
@@ -1657,7 +1657,7 @@ int main(void)
  80011d0:	fba2 2303 	umull	r2, r3, r2, r3
  80011d4:	095b      	lsrs	r3, r3, #5
  80011d6:	4618      	mov	r0, r3
- 80011d8:	f7ff ff4c 	bl	8001074 <SysTick_Config>
+ 80011d8:	f7ff ff8e 	bl	80010f8 <SysTick_Config>
 
     SD_LoadPreset("knobs1.json");
  80011dc:	48b5      	ldr	r0, [pc, #724]	; (80014b4 <main+0x318>)
@@ -1742,7 +1742,7 @@ int main(void)
  8001268:	4b95      	ldr	r3, [pc, #596]	; (80014c0 <main+0x324>)
  800126a:	781b      	ldrb	r3, [r3, #0]
  800126c:	4618      	mov	r0, r3
- 800126e:	f7ff ff39 	bl	80010e4 <LED_Off>
+ 800126e:	f7ff feed 	bl	800104c <LED_Off>
                     page = i;
  8001272:	4a93      	ldr	r2, [pc, #588]	; (80014c0 <main+0x324>)
  8001274:	7dbb      	ldrb	r3, [r7, #22]
@@ -1759,12 +1759,12 @@ int main(void)
                 }
             }
             LED_AllOff();
- 8001286:	f7ff ff43 	bl	8001110 <LED_AllOff>
+ 8001286:	f7ff fef7 	bl	8001078 <LED_AllOff>
             LED_On(page);
  800128a:	4b8d      	ldr	r3, [pc, #564]	; (80014c0 <main+0x324>)
  800128c:	781b      	ldrb	r3, [r3, #0]
  800128e:	4618      	mov	r0, r3
- 8001290:	f7ff ff12 	bl	80010b8 <LED_On>
+ 8001290:	f7ff fec6 	bl	8001020 <LED_On>
             if (isButtonDown(BUTTON_MENU)) {
  8001294:	2005      	movs	r0, #5
  8001296:	f7ff ff51 	bl	800113c <isButtonDown>
@@ -1795,10 +1795,10 @@ int main(void)
             }
 
             LED_AllOff();
- 80012c2:	f7ff ff25 	bl	8001110 <LED_AllOff>
+ 80012c2:	f7ff fed9 	bl	8001078 <LED_AllOff>
             LED_On(BUTTON_MENU);
  80012c6:	2005      	movs	r0, #5
- 80012c8:	f7ff fef6 	bl	80010b8 <LED_On>
+ 80012c8:	f7ff feaa 	bl	8001020 <LED_On>
 
             if (isButtonDown(BUTTON_MENU)) *s = NORMAL;
  80012cc:	2005      	movs	r0, #5
@@ -1892,7 +1892,7 @@ int main(void)
 
             LED_On(BUTTON_1);
  800136c:	2000      	movs	r0, #0
- 800136e:	f7ff fea3 	bl	80010b8 <LED_On>
+ 800136e:	f7ff fe57 	bl	8001020 <LED_On>
 
             if (isButtonDown(BUTTON_MENU)) *s = MENU;
  8001372:	2005      	movs	r0, #5
@@ -1939,7 +1939,7 @@ int main(void)
 
             LED_On(BUTTON_2);
  80013b8:	2001      	movs	r0, #1
- 80013ba:	f7ff fe7d 	bl	80010b8 <LED_On>
+ 80013ba:	f7ff fe31 	bl	8001020 <LED_On>
 
             if (isButtonDown(BUTTON_MENU)) *s = MENU;
  80013be:	2005      	movs	r0, #5
@@ -1982,7 +1982,7 @@ int main(void)
 
             LED_On(BUTTON_3);
  80013fe:	2002      	movs	r0, #2
- 8001400:	f7ff fe5a 	bl	80010b8 <LED_On>
+ 8001400:	f7ff fe0e 	bl	8001020 <LED_On>
 
             if (isButtonDown(BUTTON_MENU)) *s = MENU;
  8001404:	2005      	movs	r0, #5
@@ -2089,7 +2089,7 @@ int main(void)
  80014aa:	bf00      	nop
  80014ac:	20000060 	.word	0x20000060
  80014b0:	cccccccd 	.word	0xcccccccd
- 80014b4:	08013d78 	.word	0x08013d78
+ 80014b4:	08013d40 	.word	0x08013d40
  80014b8:	20002a8c 	.word	0x20002a8c
  80014bc:	20000382 	.word	0x20000382
  80014c0:	20000383 	.word	0x20000383
@@ -2893,7 +2893,7 @@ void ADC_MuxSelect(uint8_t c) {
  800199e:	46bd      	mov	sp, r7
  80019a0:	bd80      	pop	{r7, pc}
  80019a2:	bf00      	nop
- 80019a4:	080152d8 	.word	0x080152d8
+ 80019a4:	080152a0 	.word	0x080152a0
  80019a8:	40020400 	.word	0x40020400
 
 080019ac <ADC_ReadKnobs>:
@@ -3026,7 +3026,7 @@ void ADC_ReadKnobs() {
  8001aaa:	46bd      	mov	sp, r7
  8001aac:	bd80      	pop	{r7, pc}
  8001aae:	bf00      	nop
- 8001ab0:	080152c8 	.word	0x080152c8
+ 8001ab0:	08015290 	.word	0x08015290
  8001ab4:	20002a44 	.word	0x20002a44
  8001ab8:	20000368 	.word	0x20000368
 
@@ -3269,9 +3269,9 @@ void Preset_GetName(char *file_buffer, char *name_buffer) {
  8001c76:	46bd      	mov	sp, r7
  8001c78:	bd80      	pop	{r7, pc}
  8001c7a:	bf00      	nop
- 8001c7c:	08013d84 	.word	0x08013d84
- 8001c80:	08013d8c 	.word	0x08013d8c
- 8001c84:	08013d94 	.word	0x08013d94
+ 8001c7c:	08013d4c 	.word	0x08013d4c
+ 8001c80:	08013d54 	.word	0x08013d54
+ 8001c84:	08013d5c 	.word	0x08013d5c
 
 08001c88 <Preset_Load>:
 
@@ -3561,23 +3561,23 @@ void Preset_Load(char *buffer) {
  8001ea6:	374c      	adds	r7, #76	; 0x4c
  8001ea8:	46bd      	mov	sp, r7
  8001eaa:	bd90      	pop	{r4, r7, pc}
- 8001eac:	08013d98 	.word	0x08013d98
- 8001eb0:	08013da0 	.word	0x08013da0
- 8001eb4:	08013da4 	.word	0x08013da4
- 8001eb8:	08013da8 	.word	0x08013da8
- 8001ebc:	08013db0 	.word	0x08013db0
- 8001ec0:	08013db8 	.word	0x08013db8
- 8001ec4:	08013dbc 	.word	0x08013dbc
- 8001ec8:	08013dc8 	.word	0x08013dc8
- 8001ecc:	08013dd4 	.word	0x08013dd4
- 8001ed0:	08013de0 	.word	0x08013de0
+ 8001eac:	08013d60 	.word	0x08013d60
+ 8001eb0:	08013d68 	.word	0x08013d68
+ 8001eb4:	08013d6c 	.word	0x08013d6c
+ 8001eb8:	08013d70 	.word	0x08013d70
+ 8001ebc:	08013d78 	.word	0x08013d78
+ 8001ec0:	08013d80 	.word	0x08013d80
+ 8001ec4:	08013d84 	.word	0x08013d84
+ 8001ec8:	08013d90 	.word	0x08013d90
+ 8001ecc:	08013d9c 	.word	0x08013d9c
+ 8001ed0:	08013da8 	.word	0x08013da8
  8001ed4:	20002a8c 	.word	0x20002a8c
- 8001ed8:	08013d94 	.word	0x08013d94
- 8001edc:	08013dec 	.word	0x08013dec
+ 8001ed8:	08013d5c 	.word	0x08013d5c
+ 8001edc:	08013db4 	.word	0x08013db4
 
 08001ee0 <SD_FetchPresetNames>:
  */
-#include "stm32f4xx_hal.h"
+//#include "stm32f4xx_hal.h"
 #include "sd.h"
 #include "ssd1306.h"
 
@@ -3820,12 +3820,12 @@ void SD_FetchPresetNames() {
  80020ce:	46bd      	mov	sp, r7
  80020d0:	bdb0      	pop	{r4, r5, r7, pc}
  80020d2:	bf00      	nop
- 80020d4:	08013df8 	.word	0x08013df8
+ 80020d4:	08013dc0 	.word	0x08013dc0
  80020d8:	20002dec 	.word	0x20002dec
  80020dc:	20002bb4 	.word	0x20002bb4
- 80020e0:	08013dfc 	.word	0x08013dfc
+ 80020e0:	08013dc4 	.word	0x08013dc4
  80020e4:	200025b4 	.word	0x200025b4
- 80020e8:	08013e04 	.word	0x08013e04
+ 80020e8:	08013dcc 	.word	0x08013dcc
  80020ec:	080021d5 	.word	0x080021d5
  80020f0:	20002bbc 	.word	0x20002bbc
  80020f4:	20002a08 	.word	0x20002a08
@@ -3934,7 +3934,7 @@ bool SD_LoadPreset(char *filename) {
  80021be:	46bd      	mov	sp, r7
  80021c0:	bdb0      	pop	{r4, r5, r7, pc}
  80021c2:	bf00      	nop
- 80021c4:	08013df8 	.word	0x08013df8
+ 80021c4:	08013dc0 	.word	0x08013dc0
  80021c8:	20002dec 	.word	0x20002dec
  80021cc:	20002bb4 	.word	0x20002bb4
  80021d0:	20002bbc 	.word	0x20002bbc
@@ -4770,10 +4770,10 @@ void ssd1306_WriteKnob(Knob *k) {
  80027da:	46bd      	mov	sp, r7
  80027dc:	bd90      	pop	{r4, r7, pc}
  80027de:	bf00      	nop
- 80027e0:	08013e1c 	.word	0x08013e1c
- 80027e4:	08013e08 	.word	0x08013e08
- 80027e8:	08013e10 	.word	0x08013e10
- 80027ec:	08013e18 	.word	0x08013e18
+ 80027e0:	08013de4 	.word	0x08013de4
+ 80027e4:	08013dd0 	.word	0x08013dd0
+ 80027e8:	08013dd8 	.word	0x08013dd8
+ 80027ec:	08013de0 	.word	0x08013de0
  80027f0:	20000000 	.word	0x20000000
  80027f4:	20000784 	.word	0x20000784
  80027f8:	20000008 	.word	0x20000008
@@ -4858,7 +4858,7 @@ void ssd1306_WriteMainMenu() {
  800288c:	46bd      	mov	sp, r7
  800288e:	bd80      	pop	{r7, pc}
  8002890:	20002a8c 	.word	0x20002a8c
- 8002894:	20000010 	.word	0x20000010
+ 8002894:	2000001c 	.word	0x2000001c
  8002898:	20000008 	.word	0x20000008
 
 0800289c <ssd1306_WritePresets>:
@@ -5587,22 +5587,22 @@ char* update_init_indicator(Knob *k) {
  8002d62:	bf00      	nop
  8002d64:	42fe0000 	.word	0x42fe0000
  8002d68:	42c80000 	.word	0x42c80000
- 8002d6c:	08013e1c 	.word	0x08013e1c
- 8002d70:	08013e3c 	.word	0x08013e3c
- 8002d74:	08013e4c 	.word	0x08013e4c
- 8002d78:	08013e5c 	.word	0x08013e5c
- 8002d7c:	08013e6c 	.word	0x08013e6c
- 8002d80:	08013e7c 	.word	0x08013e7c
- 8002d84:	08013e8c 	.word	0x08013e8c
- 8002d88:	08013e9c 	.word	0x08013e9c
- 8002d8c:	08013eac 	.word	0x08013eac
- 8002d90:	08013ebc 	.word	0x08013ebc
- 8002d94:	08013ecc 	.word	0x08013ecc
- 8002d98:	08013edc 	.word	0x08013edc
- 8002d9c:	08013eec 	.word	0x08013eec
- 8002da0:	08013efc 	.word	0x08013efc
- 8002da4:	08013f0c 	.word	0x08013f0c
- 8002da8:	08013f1c 	.word	0x08013f1c
+ 8002d6c:	08013de4 	.word	0x08013de4
+ 8002d70:	08013e04 	.word	0x08013e04
+ 8002d74:	08013e14 	.word	0x08013e14
+ 8002d78:	08013e24 	.word	0x08013e24
+ 8002d7c:	08013e34 	.word	0x08013e34
+ 8002d80:	08013e44 	.word	0x08013e44
+ 8002d84:	08013e54 	.word	0x08013e54
+ 8002d88:	08013e64 	.word	0x08013e64
+ 8002d8c:	08013e74 	.word	0x08013e74
+ 8002d90:	08013e84 	.word	0x08013e84
+ 8002d94:	08013e94 	.word	0x08013e94
+ 8002d98:	08013ea4 	.word	0x08013ea4
+ 8002d9c:	08013eb4 	.word	0x08013eb4
+ 8002da0:	08013ec4 	.word	0x08013ec4
+ 8002da4:	08013ed4 	.word	0x08013ed4
+ 8002da8:	08013ee4 	.word	0x08013ee4
 
 08002dac <HAL_MspInit>:
 /* USER CODE END 0 */
@@ -6264,8 +6264,8 @@ void SysTick_Handler(void)
  80030ee:	bf00      	nop
  80030f0:	40020800 	.word	0x40020800
  80030f4:	40020000 	.word	0x40020000
- 80030f8:	20000048 	.word	0x20000048
- 80030fc:	20000040 	.word	0x20000040
+ 80030f8:	20000054 	.word	0x20000054
+ 80030fc:	2000004c 	.word	0x2000004c
  8003100:	2000078c 	.word	0x2000078c
  8003104:	2000037c 	.word	0x2000037c
 
@@ -6780,7 +6780,7 @@ void SystemCoreClockUpdate(void)
  80033bc:	20000060 	.word	0x20000060
  80033c0:	00f42400 	.word	0x00f42400
  80033c4:	017d7840 	.word	0x017d7840
- 80033c8:	080152e0 	.word	0x080152e0
+ 80033c8:	080152a8 	.word	0x080152a8
 
 080033cc <Reset_Handler>:
 
@@ -6867,7 +6867,7 @@ LoopFillZerobss:
   ldr r1, =_edata
  800340c:	2000034c 	.word	0x2000034c
   ldr r2, =_sidata
- 8003410:	08015b94 	.word	0x08015b94
+ 8003410:	08015b5c 	.word	0x08015b5c
   ldr r2, =_sbss
  8003414:	2000034c 	.word	0x2000034c
   ldr r4, =_ebss
@@ -15722,7 +15722,7 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
  8006822:	bf00      	nop
  8006824:	40023c00 	.word	0x40023c00
  8006828:	40023800 	.word	0x40023800
- 800682c:	080152e0 	.word	0x080152e0
+ 800682c:	080152a8 	.word	0x080152a8
  8006830:	20000060 	.word	0x20000060
  8006834:	20000064 	.word	0x20000064
 
@@ -15963,7 +15963,7 @@ uint32_t HAL_RCC_GetPCLK1Freq(void)
  80069d8:	4618      	mov	r0, r3
  80069da:	bd80      	pop	{r7, pc}
  80069dc:	40023800 	.word	0x40023800
- 80069e0:	080152f0 	.word	0x080152f0
+ 80069e0:	080152b8 	.word	0x080152b8
 
 080069e4 <HAL_RCCEx_PeriphCLKConfig>:
   *        domain (RTC and RCC_BDCR register expect BKPSRAM) will be reset
@@ -25634,7 +25634,7 @@ void MX_FATFS_Init(void)
  800a1e8:	bf00      	nop
  800a1ea:	bd80      	pop	{r7, pc}
  800a1ec:	20002bb8 	.word	0x20002bb8
- 800a1f0:	080152f8 	.word	0x080152f8
+ 800a1f0:	080152c0 	.word	0x080152c0
  800a1f4:	20002bb4 	.word	0x20002bb4
 
 0800a1f8 <get_fattime>:
@@ -33188,7 +33188,7 @@ int cmp_lfn (				/* 1:matched, 0:not matched */
  800cbde:	46bd      	mov	sp, r7
  800cbe0:	bd90      	pop	{r4, r7, pc}
  800cbe2:	bf00      	nop
- 800cbe4:	0801538c 	.word	0x0801538c
+ 800cbe4:	08015354 	.word	0x08015354
 
 0800cbe8 <pick_lfn>:
 static
@@ -33316,7 +33316,7 @@ int pick_lfn (			/* 1:succeeded, 0:buffer overflow or invalid LFN entry */
  800cca6:	46bd      	mov	sp, r7
  800cca8:	bd80      	pop	{r7, pc}
  800ccaa:	bf00      	nop
- 800ccac:	0801538c 	.word	0x0801538c
+ 800ccac:	08015354 	.word	0x08015354
 
 0800ccb0 <put_lfn>:
 	const WCHAR* lfn,	/* Pointer to the LFN */
@@ -33440,7 +33440,7 @@ int pick_lfn (			/* 1:succeeded, 0:buffer overflow or invalid LFN entry */
  800cd76:	46bd      	mov	sp, r7
  800cd78:	bd80      	pop	{r7, pc}
  800cd7a:	bf00      	nop
- 800cd7c:	0801538c 	.word	0x0801538c
+ 800cd7c:	08015354 	.word	0x08015354
 
 0800cd80 <gen_numname>:
 	BYTE* dst,			/* Pointer to the buffer to store numbered SFN */
@@ -34754,7 +34754,7 @@ WCHAR get_achar (		/* Get a character and advances ptr 1 or 2 */
  800d59c:	f85d 7b04 	ldr.w	r7, [sp], #4
  800d5a0:	4770      	bx	lr
  800d5a2:	bf00      	nop
- 800d5a4:	0801530c 	.word	0x0801530c
+ 800d5a4:	080152d4 	.word	0x080152d4
 
 0800d5a8 <pattern_matching>:
 	const TCHAR* pat,	/* Matching pattern */
@@ -35410,9 +35410,9 @@ FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not create */
  800d9fe:	3728      	adds	r7, #40	; 0x28
  800da00:	46bd      	mov	sp, r7
  800da02:	bd80      	pop	{r7, pc}
- 800da04:	08013f20 	.word	0x08013f20
- 800da08:	0801530c 	.word	0x0801530c
- 800da0c:	08013f2c 	.word	0x08013f2c
+ 800da04:	08013ee8 	.word	0x08013ee8
+ 800da08:	080152d4 	.word	0x080152d4
+ 800da0c:	08013ef4 	.word	0x08013ef4
 
 0800da10 <follow_path>:
 static
@@ -38400,7 +38400,7 @@ WCHAR ff_convert (	/* Converted character, Returns zero on error */
  800ec6c:	f85d 7b04 	ldr.w	r7, [sp], #4
  800ec70:	4770      	bx	lr
  800ec72:	bf00      	nop
- 800ec74:	0801539c 	.word	0x0801539c
+ 800ec74:	08015364 	.word	0x08015364
 
 0800ec78 <ff_wtoupper>:
 
@@ -38560,8 +38560,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  800ed7c:	f85d 7b04 	ldr.w	r7, [sp], #4
  800ed80:	4770      	bx	lr
  800ed82:	bf00      	nop
- 800ed84:	0801549c 	.word	0x0801549c
- 800ed88:	08015690 	.word	0x08015690
+ 800ed84:	08015464 	.word	0x08015464
+ 800ed88:	08015658 	.word	0x08015658
 
 0800ed8c <MX_USB_DEVICE_Init>:
 
@@ -38710,10 +38710,10 @@ void MX_USB_Send_Midi(uint8_t channel, uint8_t cc, uint8_t value) {
  800ee60:	46bd      	mov	sp, r7
  800ee62:	bd80      	pop	{r7, pc}
  800ee64:	20003020 	.word	0x20003020
- 800ee68:	08013f68 	.word	0x08013f68
- 800ee6c:	08013f6c 	.word	0x08013f6c
- 800ee70:	08013f7c 	.word	0x08013f7c
- 800ee74:	08013f8c 	.word	0x08013f8c
+ 800ee68:	08013f30 	.word	0x08013f30
+ 800ee6c:	08013f34 	.word	0x08013f34
+ 800ee70:	08013f44 	.word	0x08013f44
+ 800ee74:	08013f54 	.word	0x08013f54
 
 0800ee78 <USBD_FS_DeviceDescriptor>:
   * @param  speed : Current device speed
@@ -38813,7 +38813,7 @@ uint8_t * USBD_FS_ProductStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length
  800eef0:	bd80      	pop	{r7, pc}
  800eef2:	bf00      	nop
  800eef4:	200032f0 	.word	0x200032f0
- 800eef8:	08013fa8 	.word	0x08013fa8
+ 800eef8:	08013f70 	.word	0x08013f70
 
 0800eefc <USBD_FS_ManufacturerStrDescriptor>:
   * @param  speed : Current device speed
@@ -38842,7 +38842,7 @@ uint8_t * USBD_FS_ManufacturerStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *l
  800ef18:	46bd      	mov	sp, r7
  800ef1a:	bd80      	pop	{r7, pc}
  800ef1c:	200032f0 	.word	0x200032f0
- 800ef20:	08013fbc 	.word	0x08013fbc
+ 800ef20:	08013f84 	.word	0x08013f84
 
 0800ef24 <USBD_FS_SerialStrDescriptor>:
   * @param  speed : Current device speed
@@ -38921,7 +38921,7 @@ uint8_t * USBD_FS_ConfigStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
  800ef78:	bd80      	pop	{r7, pc}
  800ef7a:	bf00      	nop
  800ef7c:	200032f0 	.word	0x200032f0
- 800ef80:	08013fd0 	.word	0x08013fd0
+ 800ef80:	08013f98 	.word	0x08013f98
 
 0800ef84 <USBD_FS_InterfaceStrDescriptor>:
   * @param  speed : Current device speed
@@ -38965,7 +38965,7 @@ uint8_t * USBD_FS_InterfaceStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *leng
  800efb4:	bd80      	pop	{r7, pc}
  800efb6:	bf00      	nop
  800efb8:	200032f0 	.word	0x200032f0
- 800efbc:	08013fe0 	.word	0x08013fe0
+ 800efbc:	08013fa8 	.word	0x08013fa8
 
 0800efc0 <Get_SerialNum>:
   * @brief  Create the serial number string descriptor
@@ -40357,7 +40357,7 @@ static int case_insensitive_strcmp(const unsigned char *string1, const unsigned 
  800f77c:	46bd      	mov	sp, r7
  800f77e:	f85d 7b04 	ldr.w	r7, [sp], #4
  800f782:	4770      	bx	lr
- 800f784:	0801574c 	.word	0x0801574c
+ 800f784:	08015714 	.word	0x08015714
 
 0800f788 <cJSON_New_Item>:
     }
@@ -41789,7 +41789,7 @@ static parse_buffer *skip_utf8_bom(parse_buffer * const buffer)
  8010032:	3708      	adds	r7, #8
  8010034:	46bd      	mov	sp, r7
  8010036:	bd80      	pop	{r7, pc}
- 8010038:	08014024 	.word	0x08014024
+ 8010038:	08013fec 	.word	0x08013fec
 
 0801003c <cJSON_ParseWithOpts>:
 
@@ -42359,9 +42359,9 @@ static cJSON_bool parse_value(cJSON * const item, parse_buffer * const input_buf
  801038a:	46bd      	mov	sp, r7
  801038c:	bd80      	pop	{r7, pc}
  801038e:	bf00      	nop
- 8010390:	08013ffc 	.word	0x08013ffc
- 8010394:	08014028 	.word	0x08014028
- 8010398:	08014030 	.word	0x08014030
+ 8010390:	08013fc4 	.word	0x08013fc4
+ 8010394:	08013ff0 	.word	0x08013ff0
+ 8010398:	08013ff8 	.word	0x08013ff8
 
 0801039c <parse_array>:
     }
@@ -43186,10 +43186,10 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  801080e:	4798      	blx	r3
  8010810:	3601      	adds	r6, #1
  8010812:	e7f2      	b.n	80107fa <__libc_init_array+0x1e>
- 8010814:	08015b8c 	.word	0x08015b8c
- 8010818:	08015b8c 	.word	0x08015b8c
- 801081c:	08015b8c 	.word	0x08015b8c
- 8010820:	08015b90 	.word	0x08015b90
+ 8010814:	08015b54 	.word	0x08015b54
+ 8010818:	08015b54 	.word	0x08015b54
+ 801081c:	08015b54 	.word	0x08015b54
+ 8010820:	08015b58 	.word	0x08015b58
 
 08010824 <malloc>:
  8010824:	4b02      	ldr	r3, [pc, #8]	; (8010830 <malloc+0xc>)
@@ -43503,9 +43503,9 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8010abe:	6022      	str	r2, [r4, #0]
  8010ac0:	701d      	strb	r5, [r3, #0]
  8010ac2:	e7db      	b.n	8010a7c <_puts_r+0x88>
- 8010ac4:	080158d0 	.word	0x080158d0
- 8010ac8:	080158f0 	.word	0x080158f0
- 8010acc:	080158b0 	.word	0x080158b0
+ 8010ac4:	08015898 	.word	0x08015898
+ 8010ac8:	080158b8 	.word	0x080158b8
+ 8010acc:	08015878 	.word	0x08015878
 
 08010ad0 <puts>:
  8010ad0:	4b02      	ldr	r3, [pc, #8]	; (8010adc <puts+0xc>)
@@ -44298,8 +44298,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8011208:	e785      	b.n	8011116 <_strtod_l+0x1a6>
  801120a:	f04f 0c01 	mov.w	ip, #1
  801120e:	e7f6      	b.n	80111fe <_strtod_l+0x28e>
- 8011210:	0801598c 	.word	0x0801598c
- 8011214:	08015860 	.word	0x08015860
+ 8011210:	08015954 	.word	0x08015954
+ 8011214:	08015828 	.word	0x08015828
  8011218:	7ff00000 	.word	0x7ff00000
  801121c:	9b1d      	ldr	r3, [sp, #116]	; 0x74
  801121e:	1c59      	adds	r1, r3, #1
@@ -44584,13 +44584,13 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  80114f8:	f04f 0b00 	mov.w	fp, #0
  80114fc:	6023      	str	r3, [r4, #0]
  80114fe:	e789      	b.n	8011414 <_strtod_l+0x4a4>
- 8011500:	0801585d 	.word	0x0801585d
- 8011504:	08015874 	.word	0x08015874
- 8011508:	08015854 	.word	0x08015854
- 801150c:	08015857 	.word	0x08015857
- 8011510:	08015b82 	.word	0x08015b82
- 8011514:	08015a40 	.word	0x08015a40
- 8011518:	08015a18 	.word	0x08015a18
+ 8011500:	08015825 	.word	0x08015825
+ 8011504:	0801583c 	.word	0x0801583c
+ 8011508:	0801581c 	.word	0x0801581c
+ 801150c:	0801581f 	.word	0x0801581f
+ 8011510:	08015b4a 	.word	0x08015b4a
+ 8011514:	08015a08 	.word	0x08015a08
+ 8011518:	080159e0 	.word	0x080159e0
  801151c:	7ff00000 	.word	0x7ff00000
  8011520:	7ca00000 	.word	0x7ca00000
  8011524:	7fefffff 	.word	0x7fefffff
@@ -44961,7 +44961,7 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  80118dc:	39500000 	.word	0x39500000
  80118e0:	000fffff 	.word	0x000fffff
  80118e4:	7fefffff 	.word	0x7fefffff
- 80118e8:	08015888 	.word	0x08015888
+ 80118e8:	08015850 	.word	0x08015850
  80118ec:	4631      	mov	r1, r6
  80118ee:	4628      	mov	r0, r5
  80118f0:	f001 fc38 	bl	8013164 <__ratio>
@@ -45280,9 +45280,9 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8011c2c:	f04f 37ff 	mov.w	r7, #4294967295
  8011c30:	e7ea      	b.n	8011c08 <__swbuf_r+0x6c>
  8011c32:	bf00      	nop
- 8011c34:	080158d0 	.word	0x080158d0
- 8011c38:	080158f0 	.word	0x080158f0
- 8011c3c:	080158b0 	.word	0x080158b0
+ 8011c34:	08015898 	.word	0x08015898
+ 8011c38:	080158b8 	.word	0x080158b8
+ 8011c3c:	08015878 	.word	0x08015878
 
 08011c40 <_write_r>:
  8011c40:	b538      	push	{r3, r4, r5, lr}
@@ -45392,9 +45392,9 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8011d2c:	e7f7      	b.n	8011d1e <__swsetup_r+0xba>
  8011d2e:	bf00      	nop
  8011d30:	20000178 	.word	0x20000178
- 8011d34:	080158d0 	.word	0x080158d0
- 8011d38:	080158f0 	.word	0x080158f0
- 8011d3c:	080158b0 	.word	0x080158b0
+ 8011d34:	08015898 	.word	0x08015898
+ 8011d38:	080158b8 	.word	0x080158b8
+ 8011d3c:	08015878 	.word	0x08015878
 
 08011d40 <_close_r>:
  8011d40:	b538      	push	{r3, r4, r5, lr}
@@ -45586,9 +45586,9 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8011ed2:	bf08      	it	eq
  8011ed4:	68ec      	ldreq	r4, [r5, #12]
  8011ed6:	e7da      	b.n	8011e8e <_fflush_r+0x22>
- 8011ed8:	080158d0 	.word	0x080158d0
- 8011edc:	080158f0 	.word	0x080158f0
- 8011ee0:	080158b0 	.word	0x080158b0
+ 8011ed8:	08015898 	.word	0x08015898
+ 8011edc:	080158b8 	.word	0x080158b8
+ 8011ee0:	08015878 	.word	0x08015878
 
 08011ee4 <std>:
  8011ee4:	2300      	movs	r3, #0
@@ -45713,7 +45713,7 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8011ff6:	61a3      	str	r3, [r4, #24]
  8011ff8:	e7d2      	b.n	8011fa0 <__sinit+0xc>
  8011ffa:	bf00      	nop
- 8011ffc:	08015850 	.word	0x08015850
+ 8011ffc:	08015818 	.word	0x08015818
  8012000:	08011f2d 	.word	0x08011f2d
 
 08012004 <__sfp>:
@@ -45768,7 +45768,7 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8012082:	603b      	str	r3, [r7, #0]
  8012084:	e7ee      	b.n	8012064 <__sfp+0x60>
  8012086:	bf00      	nop
- 8012088:	08015850 	.word	0x08015850
+ 8012088:	08015818 	.word	0x08015818
  801208c:	ffff0001 	.word	0xffff0001
 
 08012090 <_fwalk_reent>:
@@ -46191,9 +46191,9 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  801249a:	2750      	movs	r7, #80	; 0x50
  801249c:	e713      	b.n	80122c6 <__gethex+0x12a>
  801249e:	bf00      	nop
- 80124a0:	0801598c 	.word	0x0801598c
- 80124a4:	08015910 	.word	0x08015910
- 80124a8:	08015921 	.word	0x08015921
+ 80124a0:	08015954 	.word	0x08015954
+ 80124a4:	080158d8 	.word	0x080158d8
+ 80124a8:	080158e9 	.word	0x080158e9
  80124ac:	9b15      	ldr	r3, [sp, #84]	; 0x54
  80124ae:	2b00      	cmp	r3, #0
  80124b0:	d1eb      	bne.n	801248a <__gethex+0x2ee>
@@ -46337,7 +46337,7 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  801261e:	42b0      	cmp	r0, r6
  8012620:	dbe7      	blt.n	80125f2 <__gethex+0x456>
  8012622:	e7f0      	b.n	8012606 <__gethex+0x46a>
- 8012624:	08015910 	.word	0x08015910
+ 8012624:	080158d8 	.word	0x080158d8
 
 08012628 <L_shift>:
  8012628:	f1c2 0208 	rsb	r2, r2, #8
@@ -46702,8 +46702,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  801294c:	e9c0 3303 	strd	r3, r3, [r0, #12]
  8012950:	e7f7      	b.n	8012942 <_Balloc+0x66>
  8012952:	bf00      	nop
- 8012954:	080159a0 	.word	0x080159a0
- 8012958:	080159b7 	.word	0x080159b7
+ 8012954:	08015968 	.word	0x08015968
+ 8012958:	0801597f 	.word	0x0801597f
 
 0801295c <_Bfree>:
  801295c:	b570      	push	{r4, r5, r6, lr}
@@ -46731,8 +46731,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8012990:	6021      	str	r1, [r4, #0]
  8012992:	f843 4022 	str.w	r4, [r3, r2, lsl #2]
  8012996:	bd70      	pop	{r4, r5, r6, pc}
- 8012998:	080159a0 	.word	0x080159a0
- 801299c:	080159b7 	.word	0x080159b7
+ 8012998:	08015968 	.word	0x08015968
+ 801299c:	0801597f 	.word	0x0801597f
 
 080129a0 <__multadd>:
  80129a0:	e92d 41f0 	stmdb	sp!, {r4, r5, r6, r7, r8, lr}
@@ -46788,8 +46788,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8012a24:	4620      	mov	r0, r4
  8012a26:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
  8012a2a:	bf00      	nop
- 8012a2c:	08015910 	.word	0x08015910
- 8012a30:	080159b7 	.word	0x080159b7
+ 8012a2c:	080158d8 	.word	0x080158d8
+ 8012a30:	0801597f 	.word	0x0801597f
 
 08012a34 <__s2b>:
  8012a34:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -46850,8 +46850,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8012ab8:	f7ff ff72 	bl	80129a0 <__multadd>
  8012abc:	e7ee      	b.n	8012a9c <__s2b+0x68>
  8012abe:	bf00      	nop
- 8012ac0:	08015910 	.word	0x08015910
- 8012ac4:	080159b7 	.word	0x080159b7
+ 8012ac0:	080158d8 	.word	0x080158d8
+ 8012ac4:	0801597f 	.word	0x0801597f
 
 08012ac8 <__hi0bits>:
  8012ac8:	0c03      	lsrs	r3, r0, #16
@@ -46945,8 +46945,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8012b86:	6103      	str	r3, [r0, #16]
  8012b88:	bd10      	pop	{r4, pc}
  8012b8a:	bf00      	nop
- 8012b8c:	08015910 	.word	0x08015910
- 8012b90:	080159b7 	.word	0x080159b7
+ 8012b8c:	080158d8 	.word	0x080158d8
+ 8012b90:	0801597f 	.word	0x0801597f
 
 08012b94 <__multiply>:
  8012b94:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -47066,8 +47066,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8012cd2:	3f01      	subs	r7, #1
  8012cd4:	e7a1      	b.n	8012c1a <__multiply+0x86>
  8012cd6:	bf00      	nop
- 8012cd8:	08015910 	.word	0x08015910
- 8012cdc:	080159b7 	.word	0x080159b7
+ 8012cd8:	080158d8 	.word	0x080158d8
+ 8012cdc:	0801597f 	.word	0x0801597f
 
 08012ce0 <__pow5mult>:
  8012ce0:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -47135,9 +47135,9 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8012d80:	4638      	mov	r0, r7
  8012d82:	e8bd 83f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
  8012d86:	bf00      	nop
- 8012d88:	08015b08 	.word	0x08015b08
- 8012d8c:	080159a0 	.word	0x080159a0
- 8012d90:	080159b7 	.word	0x080159b7
+ 8012d88:	08015ad0 	.word	0x08015ad0
+ 8012d8c:	08015968 	.word	0x08015968
+ 8012d90:	0801597f 	.word	0x0801597f
 
 08012d94 <__lshift>:
  8012d94:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -47216,8 +47216,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8012e5e:	d8f9      	bhi.n	8012e54 <__lshift+0xc0>
  8012e60:	e7ea      	b.n	8012e38 <__lshift+0xa4>
  8012e62:	bf00      	nop
- 8012e64:	08015910 	.word	0x08015910
- 8012e68:	080159b7 	.word	0x080159b7
+ 8012e64:	080158d8 	.word	0x080158d8
+ 8012e68:	0801597f 	.word	0x0801597f
 
 08012e6c <__mcmp>:
  8012e6c:	b530      	push	{r4, r5, lr}
@@ -47342,8 +47342,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8012fa6:	e7e0      	b.n	8012f6a <__mdiff+0xc6>
  8012fa8:	3e01      	subs	r6, #1
  8012faa:	e7ea      	b.n	8012f82 <__mdiff+0xde>
- 8012fac:	08015910 	.word	0x08015910
- 8012fb0:	080159b7 	.word	0x080159b7
+ 8012fac:	080158d8 	.word	0x080158d8
+ 8012fb0:	0801597f 	.word	0x0801597f
 
 08012fb4 <__ulp>:
  8012fb4:	b082      	sub	sp, #8
@@ -47499,8 +47499,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8013152:	f7ff fcb9 	bl	8012ac8 <__hi0bits>
  8013156:	ebc0 1042 	rsb	r0, r0, r2, lsl #5
  801315a:	e7df      	b.n	801311c <__d2b+0x70>
- 801315c:	08015910 	.word	0x08015910
- 8013160:	080159b7 	.word	0x080159b7
+ 801315c:	080158d8 	.word	0x080158d8
+ 8013160:	0801597f 	.word	0x0801597f
 
 08013164 <__ratio>:
  8013164:	e92d 4ff7 	stmdb	sp!, {r0, r1, r2, r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -47923,11 +47923,11 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8013558:	f000 f9d4 	bl	8013904 <_printf_i>
  801355c:	e7eb      	b.n	8013536 <_svfiprintf_r+0x1c2>
  801355e:	bf00      	nop
- 8013560:	08015b14 	.word	0x08015b14
- 8013564:	08015b1e 	.word	0x08015b1e
+ 8013560:	08015adc 	.word	0x08015adc
+ 8013564:	08015ae6 	.word	0x08015ae6
  8013568:	00000000 	.word	0x00000000
  801356c:	080132bd 	.word	0x080132bd
- 8013570:	08015b1a 	.word	0x08015b1a
+ 8013570:	08015ae2 	.word	0x08015ae2
 
 08013574 <__sfputc_r>:
  8013574:	6893      	ldr	r3, [r2, #8]
@@ -48210,14 +48210,14 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8013800:	f000 f880 	bl	8013904 <_printf_i>
  8013804:	e7e4      	b.n	80137d0 <_vfiprintf_r+0x208>
  8013806:	bf00      	nop
- 8013808:	080158d0 	.word	0x080158d0
- 801380c:	080158f0 	.word	0x080158f0
- 8013810:	080158b0 	.word	0x080158b0
- 8013814:	08015b14 	.word	0x08015b14
- 8013818:	08015b1e 	.word	0x08015b1e
+ 8013808:	08015898 	.word	0x08015898
+ 801380c:	080158b8 	.word	0x080158b8
+ 8013810:	08015878 	.word	0x08015878
+ 8013814:	08015adc 	.word	0x08015adc
+ 8013818:	08015ae6 	.word	0x08015ae6
  801381c:	00000000 	.word	0x00000000
  8013820:	080135a3 	.word	0x080135a3
- 8013824:	08015b1a 	.word	0x08015b1a
+ 8013824:	08015ae2 	.word	0x08015ae2
 
 08013828 <_printf_common>:
  8013828:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -48553,8 +48553,8 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8013b40:	f104 0619 	add.w	r6, r4, #25
  8013b44:	e7f5      	b.n	8013b32 <_printf_i+0x22e>
  8013b46:	bf00      	nop
- 8013b48:	08015b25 	.word	0x08015b25
- 8013b4c:	08015b36 	.word	0x08015b36
+ 8013b48:	08015aed 	.word	0x08015aed
+ 8013b4c:	08015afe 	.word	0x08015afe
 
 08013b50 <_read_r>:
  8013b50:	b538      	push	{r3, r4, r5, lr}
@@ -48618,9 +48618,9 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
  8013bcc:	e7f3      	b.n	8013bb6 <__assert_func+0x12>
  8013bce:	bf00      	nop
  8013bd0:	20000178 	.word	0x20000178
- 8013bd4:	08015b47 	.word	0x08015b47
- 8013bd8:	08015b54 	.word	0x08015b54
- 8013bdc:	08015b82 	.word	0x08015b82
+ 8013bd4:	08015b0f 	.word	0x08015b0f
+ 8013bd8:	08015b1c 	.word	0x08015b1c
+ 8013bdc:	08015b4a 	.word	0x08015b4a
 
 08013be0 <fiprintf>:
  8013be0:	b40e      	push	{r1, r2, r3}

@@ -2,6 +2,7 @@
  * sd.h
  */
 #include <stdlib.h>
+#include "main.h"
 #include "fatfs.h"
 #include "knob.h"
 #include "preset.h"

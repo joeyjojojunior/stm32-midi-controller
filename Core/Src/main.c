@@ -30,6 +30,7 @@
 #include "preset.h"
 #include "sd.h"
 #include "midi.h"
+#include "led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -80,23 +81,7 @@ static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-void LED_On(uint8_t i) {
-    HAL_GPIO_WritePin(GPIO_PORT_LEDS, LEDPins[i], GPIO_PIN_SET);
-}
 
-void LED_Off(uint8_t i) {
-    HAL_GPIO_WritePin(GPIO_PORT_LEDS, LEDPins[i], GPIO_PIN_RESET);
-}
-
-void LED_AllOff() {
-    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
-        LED_Off(i);
-    }
-}
-
-void LED_Toggle(uint8_t i) {
-    HAL_GPIO_TogglePin(GPIO_PORT_LEDS, LEDPins[i]);
-}
 
 bool isButtonDown(uint8_t i) {
     bool ret = btnDown[i];
@@ -109,44 +94,6 @@ bool isButtonDown(uint8_t i) {
 
 void Button_Ignore(uint8_t i) {
     btnDown[i] = false;
-}
-
-void Button_Clear() {
-    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
-        btnDown[i] = false;
-    }
-}
-
-void Button_Eval(State *s) {
-
-}
-
-void Print_State(State *s) {
-    char t[20];
-    size_t tl = sizeof(t) / sizeof(t[0]);
-
-    switch (*s) {
-    case NORMAL:
-        snprintf(t, tl, "%s", "NORMAL");
-        break;
-    case MENU:
-        snprintf(t, tl, "%s", "MENU");
-        break;
-    case LOAD_PRESET:
-        snprintf(t, tl, "%s", "LOAD_PRESET");
-        break;
-    case LOAD_PATCH:
-        snprintf(t, tl, "%s", "LOAD_PATCH");
-        break;
-    case SAVE_PATCH:
-        snprintf(t, tl, "%s", "SAVE_PATCH");
-        break;
-    }
-
-    ssd1306_Fill(Black);
-    ssd1306_SetCursor(0, 0);
-    ssd1306_WriteString(t, Font_10x18, White);
-    ssd1306_UpdateScreen();
 }
 
 void ADC_ReadKnobs();

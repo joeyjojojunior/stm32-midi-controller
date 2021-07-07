@@ -47,7 +47,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../USB_DEVICE/Target/usbd_conf.h ../Core/Inc/ssd1306.h \
  ../Core/Inc/fonts.h ../Core/Inc/knob.h ../Core/Inc/preset.h \
  ../cJSON/Inc/cJSON.h ../Core/Inc/knob.h ../Core/Inc/preset.h \
- ../Core/Inc/sd.h ../Core/Inc/midi.h
+ ../Core/Inc/sd.h ../Core/Inc/main.h ../Core/Inc/midi.h ../Core/Inc/led.h
 
 ../Core/Inc/main.h:
 
@@ -167,4 +167,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/sd.h:
 
+../Core/Inc/main.h:
+
 ../Core/Inc/midi.h:
+
+../Core/Inc/led.h:
