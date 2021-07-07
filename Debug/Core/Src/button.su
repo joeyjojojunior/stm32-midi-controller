@@ -1,3 +1,0 @@
-button.c:16:6:Button_Debounce	24	static
-button.c:37:6:Button_IsDown	24	static
-button.c:46:6:Button_Ignore	16	static
