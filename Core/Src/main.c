@@ -117,6 +117,8 @@ int main(void)
 
     // Load the first preset (TODO: load the last preset used)
     SD_LoadPreset("knobs1.json");
+    SD_SavePreset();
+
 
     // Init displays
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
@@ -219,12 +221,12 @@ void MenuStateMachine(State *s) {
         break;
     case LOAD_PRESET:
         SD_FetchPresetNames();
+        isPresetFilenamesLoaded = true;
 
         if (!isDisplaysLocked) {
             ssd1306_WritePresets();
             isDisplaysLocked = true;
         }
-        isPresetFilenamesLoaded = true;
 
         for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
             adcAveragedPrev[i] = adcAveraged[i];
@@ -238,6 +240,8 @@ void MenuStateMachine(State *s) {
         Button_Ignore(BUTTON_2);
         break;
     case SAVE_PRESET:
+        SD_SavePreset();
+
         if (!isDisplaysLocked) {
             //ssd1306_WriteSaveNotification();
             ssd1306_FillAll(Black);
@@ -246,7 +250,9 @@ void MenuStateMachine(State *s) {
 
         LED_On(BUTTON_2);
 
-        if (Button_IsDown(BUTTON_MENU)) *s = MENU;
+        *s = MENU;
+
+        //if (Button_IsDown(BUTTON_MENU)) *s = MENU;
 
         Button_Ignore(BUTTON_1);
         Button_Ignore(BUTTON_2);

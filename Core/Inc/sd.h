@@ -17,6 +17,7 @@ extern bool isPresetFilenamesLoaded;
 
 void SD_FetchPresetNames();
 bool SD_LoadPreset(char *filename);
+bool SD_SavePreset();
 void SD_Toggle();
 void SD_Enable();
 void SD_Disable();

@@ -26,7 +26,7 @@ void SD_FetchPresetNames() {
     uint8_t i = 0;
     retSD = f_findfirst(&root, &root_info, "", "*.json");
     while (retSD == FR_OK && root_info.fname[0]) {
-        snprintf(presetFilenames[i], _MAX_LFN+1, "%s", root_info.fname);
+        snprintf(presetFilenames[i], _MAX_LFN + 1, "%s", root_info.fname);
         retSD = f_findnext(&root, &root_info);
         i++;
     }
@@ -55,7 +55,7 @@ void SD_FetchPresetNames() {
 
 bool SD_LoadPreset(char *filename) {
     retSD = f_mount(&SDFatFS, "", 1);
-    retSD = f_open(&SDFile, filename, FA_READ);
+    retSD = f_open(&SDFile, filename, FA_READ | FA_WRITE);
 
     char presetBuffer[f_size(&SDFile) + 1];
     unsigned int bytesRead;
@@ -66,6 +66,28 @@ bool SD_LoadPreset(char *filename) {
 
     retSD = f_close(&SDFile);
     retSD = f_mount(NULL, "", 0);
+
+    return true;
+}
+
+bool SD_SavePreset() {
+    UINT bw;
+
+    char filename[] = "TEST.json";
+    char presetName[MAX_LABEL_CHARS + 1] = "TEST";
+    char *json_string = Preset_Save(presetName);
+
+    retSD = f_mount(&SDFatFS, "", 1);
+    retSD = f_open(&SDFile, filename, FA_WRITE | FA_CREATE_ALWAYS);
+    retSD = f_write(&SDFile, json_string, strlen(json_string) , &bw);
+    if (strlen(json_string) != bw || retSD != FR_OK) {
+        //TODO: Error handling }
+    }
+
+    retSD = f_close(&SDFile);
+    retSD = f_mount(NULL, "", 0);
+
+    free(json_string);
 
     return true;
 }
