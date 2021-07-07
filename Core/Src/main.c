@@ -25,14 +25,14 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include "adc.h"
 #include "ssd1306.h"
-#include "knob.h"
-#include "preset.h"
+#include "button.h"
+#include "led.h"
 #include "sd.h"
 #include "midi.h"
-#include "led.h"
-#include "button.h"
-#include "adc.h"
+#include "knob.h"
+#include "preset.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
