@@ -6,6 +6,8 @@
 #define INC_BUTTON_H_
 
 #define NUM_BUTTONS 6
+#define GPIO_PORT_BUTTONS_1TO5 GPIOA
+#define GPIO_PORT_BUTTON_6 Button_6_GPIO_Port
 
 extern volatile bool btnDown[];
 

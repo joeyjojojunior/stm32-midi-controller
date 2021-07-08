@@ -4,7 +4,7 @@
  */
 #include "knob.h"
 
-Knob knobs[4];
+Knob knobs[MAX_KNOBS];
 
 void Knob_Free(Knob *k) {
     free(k->sub_labels);

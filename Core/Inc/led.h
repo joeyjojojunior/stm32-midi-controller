@@ -1,7 +1,6 @@
 /*
  * led.h
  */
-
 #include <stdint.h>
 #include "main.h"
 
@@ -9,6 +8,7 @@
 #define INC_LED_H_
 
 #define NUM_LEDS 6
+#define GPIO_PORT_LEDS GPIOB
 
 void LED_On(uint8_t i);
 void LED_Off(uint8_t i);

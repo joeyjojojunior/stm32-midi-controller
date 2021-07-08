@@ -1,13 +1,22 @@
 #include "preset.h"
 #include "ffconf.h"
 
-char presetNames[NUM_KNOBS][MAX_LABEL_CHARS + 1];
+Preset presets[MAX_PRESETS];
+uint16_t numPresets = 0;
+uint16_t currentPreset = 0;
 
-void Preset_GetName(char *file_buffer, char *name_buffer) {
+void Preset_GetName(char *filename, char *file_buffer, char *name_buffer) {
     cJSON *preset_json = cJSON_Parse(file_buffer);
     if (preset_json == NULL) return;
     const cJSON *name = cJSON_GetObjectItemCaseSensitive(preset_json, "name");
-    snprintf(name_buffer, MAX_LABEL_CHARS + 1, "%s", name->valuestring);
+    const cJSON *index = cJSON_GetObjectItemCaseSensitive(preset_json, "index");
+
+    uint16_t preset_index = atoi(index->valuestring);
+    snprintf(presets[preset_index].name, strlen(name->valuestring) + 1, "%s", name->valuestring);
+    snprintf(presets[preset_index].filename, _MAX_LFN + 1, "%s", filename);
+    presets[preset_index].index = preset_index;
+
+    numPresets++;
 
     cJSON_Delete(preset_json);
 }
@@ -15,6 +24,9 @@ void Preset_GetName(char *file_buffer, char *name_buffer) {
 void Preset_Load(char *buffer) {
     cJSON *preset_json = cJSON_Parse(buffer);
     if (preset_json == NULL) return;
+
+    const cJSON *index = cJSON_GetObjectItemCaseSensitive(preset_json, "index");
+    currentPreset = atoi(index->valuestring);
 
     const cJSON *knobs_json = cJSON_GetObjectItemCaseSensitive(preset_json, "knobs");
     const cJSON *knob_json = NULL;
@@ -61,10 +73,12 @@ void Preset_Load(char *buffer) {
     cJSON_Delete(preset_json);
 }
 
-char *Preset_Save(char* preset_name) {
+char* Preset_Save(char *preset_name) {
     char *json_string = NULL;
+    char numBuf[4];
 
     cJSON *name = NULL;
+    cJSON *index = NULL;
     cJSON *knobs_arr = NULL;
     cJSON *knob = NULL;
     cJSON *row = NULL;
@@ -84,11 +98,14 @@ char *Preset_Save(char* preset_name) {
     name = cJSON_CreateString(preset_name);
     cJSON_AddItemToObject(preset_json, "name", name);
 
+    itoa(numPresets, numBuf, 10);
+    index = cJSON_CreateString(numBuf);
+    cJSON_AddItemToObject(preset_json, "index", index);
+
     knobs_arr = cJSON_CreateArray();
     cJSON_AddItemToObject(preset_json, "knobs", knobs_arr);
 
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
-        char numBuf[4];
         knob = cJSON_CreateObject();
         cJSON_AddItemToArray(knobs_arr, knob);
 
@@ -110,7 +127,6 @@ char *Preset_Save(char* preset_name) {
             sub_label = cJSON_CreateString(knobs[i].sub_labels[j]);
             cJSON_AddItemToArray(sub_labels, sub_label);
         }
-
 
         itoa(knobs[i].channel, numBuf, 10);
         channel = cJSON_CreateString(numBuf);

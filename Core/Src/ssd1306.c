@@ -7,7 +7,7 @@
 static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
 
 // Menu items to display
-static char menuItems[2][MAX_LABEL_CHARS + 1] = { "Load Preset", "Save Patch" };
+static char menuItems[2][MAX_KNOB_LABEL_CHARS + 1] = { "Load Preset", "Save Preset" };
 
 // Screen object
 static SSD1306_t SSD1306;
@@ -190,10 +190,10 @@ void ssd1306_WritePresets() {
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         ssd1306_Select(&knobs[i]);
         ssd1306_Fill(Black);
-        uint8_t x = (SSD1306_WIDTH - strlen(presetNames[i]) * Font_11x18.FontWidth) / 2;
+        uint8_t x = (SSD1306_WIDTH - strlen(presets[i].name) * Font_11x18.FontWidth) / 2;
         uint8_t y = SSD1306_HEIGHT / 2 - Font_11x18.FontHeight / 2;
         ssd1306_SetCursor(x, y);
-        ssd1306_WriteString(presetNames[i], Font_11x18, White);
+        ssd1306_WriteString(presets[i].name, Font_11x18, White);
         ssd1306_UpdateScreen();
     }
 }

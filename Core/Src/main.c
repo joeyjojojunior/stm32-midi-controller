@@ -26,6 +26,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdbool.h>
+#include <time.h>
 #include "adc.h"
 #include "ssd1306.h"
 #include "button.h"
@@ -116,8 +117,10 @@ int main(void)
     SysTick_Config(SystemCoreClock / 40);
 
     // Load the first preset (TODO: load the last preset used)
-    SD_LoadPreset("knobs1.json");
-    SD_SavePreset();
+    SD_FetchPresetNames();
+    SD_LoadPreset(presets[0].filename);
+
+    //SD_SavePreset();
 
 
     // Init displays
@@ -127,6 +130,9 @@ int main(void)
     }
 
     State *s = &state;
+
+    //*s = LOAD_PRESET;
+    //ssd1306_WritePresets();
 
     while (1) {
         MenuStateMachine(s);
@@ -142,7 +148,7 @@ int main(void)
                         bool loadComplete = false;
 
                         if (isPresetFilenamesLoaded) {
-                            loadComplete = SD_LoadPreset(presetFilenames[i]);
+                            loadComplete = SD_LoadPreset(presets[i].filename);
                             isPresetFilenamesLoaded = false;
                         }
 
@@ -224,12 +230,12 @@ void MenuStateMachine(State *s) {
         isPresetFilenamesLoaded = true;
 
         if (!isDisplaysLocked) {
+            for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
+                adcAveragedPrev[i] = adcAveraged[i];
+            }
+
             ssd1306_WritePresets();
             isDisplaysLocked = true;
-        }
-
-        for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
-            adcAveragedPrev[i] = adcAveraged[i];
         }
 
         LED_On(BUTTON_1);

@@ -10,6 +10,7 @@
 
 #define NUM_ADC_SAMPLES 32
 #define NUM_ADC_CHANNELS 4
+#define GPIO_PORT_AMUX GPIOB
 
 extern ADC_HandleTypeDef hadc1;
 extern uint16_t adcAveraged[NUM_ADC_CHANNELS];

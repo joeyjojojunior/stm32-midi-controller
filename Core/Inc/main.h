@@ -96,14 +96,9 @@ void Error_Handler(void);
 #define AMUX_S3_Pin GPIO_PIN_9
 #define AMUX_S3_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define KNOB_SELECT_THRESHOLD 5
+#define KNOB_SELECT_THRESHOLD 25
 #define NUM_ROWS 4
 #define NUM_COLS 1
-#define NUM_PAGES 5
-#define GPIO_PORT_AMUX GPIOB
-#define GPIO_PORT_BUTTONS_1TO5 GPIOA
-#define GPIO_PORT_BUTTON_6 Button_6_GPIO_Port
-#define GPIO_PORT_LEDS GPIOB
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

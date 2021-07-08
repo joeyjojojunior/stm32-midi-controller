@@ -4,8 +4,6 @@
 #include "sd.h"
 #include "ssd1306.h"
 
-char presetFilenames[NUM_KNOBS][_MAX_LFN + 1];
-char patchFilenames[NUM_KNOBS][_MAX_LFN + 1];
 bool isPresetFilenamesLoaded = false;
 
 void SD_FetchPresetNames() {
@@ -13,43 +11,26 @@ void SD_FetchPresetNames() {
     FILINFO root_info;
     retSD = f_mount(&SDFatFS, "", 1);
 
-    // Count the number of preset files on the card
-    uint8_t presetCount = 0;
+    numPresets = 0;
+
     retSD = f_findfirst(&root, &root_info, "", "*.json");
     while (retSD == FR_OK && root_info.fname[0]) {
-        presetCount++;
-        retSD = f_findnext(&root, &root_info);
-    }
-    f_closedir(&root);
-
-    // Save the filename of each file so we can sort the list
-    uint8_t i = 0;
-    retSD = f_findfirst(&root, &root_info, "", "*.json");
-    while (retSD == FR_OK && root_info.fname[0]) {
-        snprintf(presetFilenames[i], _MAX_LFN + 1, "%s", root_info.fname);
-        retSD = f_findnext(&root, &root_info);
-        i++;
-    }
-
-    // Sort the filenames
-    qsort(presetFilenames, presetCount, sizeof(presetFilenames[0]), qsort_cmp);
-
-    // Open each file, parse the name, and save it to the presets array
-    for (i = 0; i < presetCount; i++) {
-        retSD = f_open(&SDFile, presetFilenames[i], FA_READ);
+        retSD = f_open(&SDFile, root_info.fname, FA_READ);
 
         char presetBuffer[f_size(&SDFile) + 1];
-        char nameBuffer[MAX_LABEL_CHARS + 1];
+        char nameBuffer[MAX_KNOB_LABEL_CHARS + 1];
         unsigned int bytesRead;
+
         retSD = f_read(&SDFile, presetBuffer, sizeof(presetBuffer) - 1, &bytesRead);
         presetBuffer[bytesRead] = '\0';
 
-        Preset_GetName(presetBuffer, nameBuffer);
+        Preset_GetName(root_info.fname, presetBuffer, nameBuffer);
 
-        snprintf(presetNames[i], MAX_LABEL_CHARS + 1, "%s", nameBuffer);
         retSD = f_close(&SDFile);
+        retSD = f_findnext(&root, &root_info);
     }
 
+    f_closedir(&root);
     retSD = f_mount(NULL, "", 0);
 }
 
@@ -71,15 +52,33 @@ bool SD_LoadPreset(char *filename) {
 }
 
 bool SD_SavePreset() {
-    UINT bw;
+    if (numPresets >= MAX_PRESETS) return false;
 
-    char filename[] = "TEST.json";
-    char presetName[MAX_LABEL_CHARS + 1] = "TEST";
-    char *json_string = Preset_Save(presetName);
+    UINT bw;
+    FILINFO root_info;
+    char fileNameNoExtRand[MAX_FILENAME_LENGTH - NUM_EXTENSION_CHARS + 1];
+    char filenameRand[strlen(fileNameNoExtRand) + NUM_EXTENSION_CHARS + 2];
+    //char presetNameRand[MAX_FILENAME_LENGTH + 1];
+    //char filenameRand[strlen(presetNameRand) + NUM_EXTENSION_CHARS + 2];
 
     retSD = f_mount(&SDFatFS, "", 1);
-    retSD = f_open(&SDFile, filename, FA_WRITE | FA_CREATE_ALWAYS);
-    retSD = f_write(&SDFile, json_string, strlen(json_string) , &bw);
+
+    // Keep randomly generating filenames until we get a unique one
+    do {
+        //getRandomPresetName(presetNameRand);
+        getRandomFileNameNoExt(fileNameNoExtRand);
+        //snprintf(filenameRand, strlen(presetNameRand) + 2, "%s", presetNameRand);
+        snprintf(filenameRand, strlen(fileNameNoExtRand) + 2, "%s", fileNameNoExtRand);
+        strcat(filenameRand, ".json");
+    } while (f_stat(filenameRand, &root_info) != FR_NO_FILE);
+
+    //char *json_string = Preset_Save(presetNameRand);
+
+    char *json_string = Preset_Save(presets[currentPreset].name);
+    numPresets++;
+
+    retSD = f_open(&SDFile, filenameRand, FA_WRITE | FA_CREATE_ALWAYS);
+    retSD = f_write(&SDFile, json_string, strlen(json_string), &bw);
     if (strlen(json_string) != bw || retSD != FR_OK) {
         //TODO: Error handling }
     }
@@ -92,21 +91,47 @@ bool SD_SavePreset() {
     return true;
 }
 
-void SD_Toggle() {
-    hsd.State != HAL_SD_STATE_READY ? SD_Enable() : SD_Disable();
+void getRandomFileNameNoExt(char *fileNameBuf) {
+    char randBuf[NUM_FN_RANDOM_CHARS + 1];
+    char *currFilename = presets[currentPreset].filename;
+    char fileNameNoExt[MAX_FILENAME_LENGTH - NUM_EXTENSION_CHARS + 1];
+
+    snprintf(fileNameNoExt, strlen(currFilename), "%s", currFilename);
+    strtok(fileNameNoExt, ".");
+
+    getRandomString(randBuf);
+
+    uint16_t len_filenameNoExt = strlen(fileNameNoExt) + strlen(randBuf) + 2;
+    snprintf(fileNameBuf, strlen(fileNameNoExt) + 1, "%s", fileNameNoExt);
+    strcat(fileNameBuf, "_");
+    strcat(fileNameBuf, randBuf);
+    fileNameBuf[len_filenameNoExt - 1] = '\0';
 }
 
-void SD_Enable() {
-    __HAL_SD_ENABLE(hsd);
-    hsd.State = HAL_SD_STATE_READY;
+void getRandomPresetName(char *presetNameBuf) {
+    char randBuf[NUM_FN_RANDOM_CHARS + 1];
+    char *currPresetName = presets[currentPreset].name;
+
+    getRandomString(randBuf);
+
+    uint16_t len_presetName = strlen(currPresetName) + strlen(randBuf) + 2;
+    snprintf(presetNameBuf, strlen(currPresetName) + 1, "%s", currPresetName);
+    strcat(presetNameBuf, "_");
+    strcat(presetNameBuf, randBuf);
+    presetNameBuf[len_presetName - 1] = '\0';
+
 }
 
-void SD_Disable() {
-    __HAL_SD_DISABLE(hsd);
-    hsd.State = HAL_SD_STATE_RESET;
-}
+void getRandomString(char *randBuf) {
+    static const char alphanum[] =
+            "0123456789"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    "abcdefghijklmnopqrstuvwxyz";
 
-int qsort_cmp(const void *lhs, const void *rhs) {
-    return strcmp(lhs, rhs);
+    for (int i = 0; i < NUM_FN_RANDOM_CHARS; ++i) {
+        randBuf[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    randBuf[NUM_FN_RANDOM_CHARS] = '\0';
 }
 
