@@ -135,15 +135,22 @@ int main(void)
     uint8_t temp = 0;
 
     while (1) {
+
+/*
+        if (temp == 1) {
+            btnDown[BUTTON_2] = true;
+        }
+        else if (temp == 2) {
+            btnDown[BUTTON_1] = true;
+        }
+*/
+
         /*
-        if (temp == 0) {
-            btnDown[BUTTON_5] = true;
-        } else if (temp == 1) {
-            *s = MENU;
-        } else if (temp == 2) {
+        else if (temp == 2) {
             btnDown[BUTTON_1] = true;
         }
         */
+
 
         MenuStateMachine(s);
 
@@ -180,7 +187,7 @@ int main(void)
                         knobs[Knob_Index(index1D)].value = curr_MIDI_val;
                         ssd1306_WriteKnob(&knobs[Knob_Index(index1D)]);
 
-                        if (knobs[Knob_Index(index1D)].value == knobs[Knob_Index(index1D)].init_value)
+                        if (knobs[Knob_Index(index1D)].value == knobs[Knob_Index(index1D)].lock_value)
                             knobs[Knob_Index(index1D)].isLocked = false;
 
                         if (!knobs[Knob_Index(index1D)].isLocked)
@@ -218,7 +225,8 @@ void MenuStateMachine(State *s) {
 
         // Handle page switch
         for (uint8_t i = 0; i < NUM_BUTTONS - 1; i++) {
-            if (Button_IsDown(i)) {
+            if (Button_IsDown(i) && i != knobPage) {
+                Knob_LockAll();
                 LED_Off(knobPage);
                 knobPage = i;
                 break;

@@ -14,15 +14,14 @@
 #define MAX_PRESETS NUM_KNOBS * NUM_PAGES
 #define MAX_FILENAME_LENGTH _MAX_LFN/4
 
-extern uint16_t numPresets;
-extern uint16_t currentPreset;
-
 typedef struct Preset {
     char filename[MAX_FILENAME_LENGTH + 1];
     char name[MAX_KNOB_LABEL_CHARS + 1];
     uint16_t index;
 } Preset;
 
+extern uint16_t numPresets;
+extern uint16_t currentPreset;
 extern Preset presets[MAX_PRESETS];
 
 void Preset_GetName(char *filename, char *file_buffer, char *name_buffer);

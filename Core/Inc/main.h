@@ -36,7 +36,6 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-typedef const enum { BUTTON_1 = 0, BUTTON_2, BUTTON_3, BUTTON_4, BUTTON_5, BUTTON_MENU } Buttons;
 typedef enum { NORMAL = 0, MENU, LOAD_PRESET, SAVE_PRESET } State;
 /* USER CODE END ET */
 
@@ -97,9 +96,9 @@ void Error_Handler(void);
 #define AMUX_S3_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 #define NUM_MENU_ITEMS 4
-#define KNOB_SELECT_THRESHOLD 25
 #define NUM_ROWS 4
 #define NUM_COLS 1
+#define KNOB_SELECT_THRESHOLD 25
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

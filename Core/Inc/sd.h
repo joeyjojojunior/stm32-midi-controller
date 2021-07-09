@@ -14,7 +14,6 @@
 #define NUM_EXTENSION_CHARS 5
 
 extern SD_HandleTypeDef hsd;
-extern RTC_HandleTypeDef hrtc;
 extern bool isPresetFilenamesLoaded;
 
 bool SD_FetchPresetNames();

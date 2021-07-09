@@ -18,15 +18,23 @@ void Knob_Init() {
     }
 }
 
-void Knob_Free(Knob *k) {
-    free(k->sub_labels);
-}
-
+// Converts a knob index from 0 to NUM_KNOBS to select a knob page
 uint16_t Knob_Index(uint8_t i) {
     return i + knobPage * NUM_KNOBS;
+}
+
+void Knob_LockAll() {
+    for (uint16_t i = 0; i < NUM_KNOBS; i++) {
+        knobs[Knob_Index(i)].lock_value = knobs[Knob_Index(i)].value;
+        knobs[Knob_Index(i)].isLocked = 1;
+    }
 }
 
 // Maps values from (0, max_values-1) to (0, m)
 uint8_t Knob_Map(Knob *k, uint8_t value, uint8_t m) {
     return value * m / (k->max_values - 1);
+}
+
+void Knob_Free(Knob *k) {
+    free(k->sub_labels);
 }

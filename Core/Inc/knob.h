@@ -25,14 +25,16 @@ typedef struct Knob {
     uint8_t max_values;
     uint8_t max_range;
     uint8_t isLocked;
+    uint8_t lock_value;
 } Knob;
 
 extern Knob knobs[NUM_KNOBS * NUM_PAGES];
 extern uint8_t knobPage;
 
 void Knob_Init();
-void Knob_Free(Knob *k);
+void Knob_LockAll();
 uint16_t Knob_Index(uint8_t i);
 uint8_t Knob_Map(Knob *k, uint8_t value, uint8_t m);
+void Knob_Free(Knob *k);
 
 #endif /* INC_KNOB_H_ */

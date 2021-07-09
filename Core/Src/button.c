@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include "ssd1306.h"
 #include "button.h"
-#include "main.h"
 
 volatile bool btnDown[NUM_BUTTONS] = { false };
 uint8_t btnCount[NUM_BUTTONS] = { 0 };

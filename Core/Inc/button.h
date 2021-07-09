@@ -10,6 +10,7 @@
 #define GPIO_PORT_BUTTON_6 Button_6_GPIO_Port
 
 extern volatile bool btnDown[];
+typedef const enum { BUTTON_1 = 0, BUTTON_2, BUTTON_3, BUTTON_4, BUTTON_5, BUTTON_MENU } Buttons;
 
 void Button_Debounce();
 bool Button_IsDown(uint8_t i);

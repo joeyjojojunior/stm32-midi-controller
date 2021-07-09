@@ -155,7 +155,6 @@ void ssd1306_WriteKnob(Knob *k) {
     uint8_t y_remaining = SSD1306_HEIGHT - 2 * NumFont_5x7.FontHeight;
 
     // Draw main label
-
     uint8_t y_remaining_div = (k->num_sl > 0) ? 3 : 2;
     len_label = strlen(k->label);
     x = (SSD1306_WIDTH - len_label * Font_11x18.FontWidth) / 2;
@@ -166,7 +165,9 @@ void ssd1306_WriteKnob(Knob *k) {
     // If the max number of values is restricted, we want to use
     // sub labels for each choice (e.g. osc. wave selection)
     if (k->num_sl > 0) {
-        uint8_t sl_index = (k->max_values < MIDI_MAX + 1) ? k->value : 0;
+        uint8_t sl_index = (k->max_values == MIDI_MAX + 1) ? 0 :
+                           (k->isLocked) ? k->lock_value : k->value;
+        //uint8_t sl_index = (k->max_values < MIDI_MAX + 1) ? k->value : 0;
         len_label = strlen(k->sub_labels[sl_index]);
         x = (SSD1306_WIDTH - len_label * Font_11x18.FontWidth) / 2;
         y = SSD1306_HEIGHT - Font_11x18.FontHeight - 1;
@@ -325,7 +326,7 @@ void i2c_Select(uint8_t mux_addr, uint8_t i) {
 
 // Update the init value closeness indicator
 char* update_init_indicator(Knob *k) {
-    int8_t init_diff = Knob_Map(k, k->init_value, MIDI_MAX) - Knob_Map(k, k->value, MIDI_MAX);
+    int8_t init_diff = Knob_Map(k, k->lock_value, MIDI_MAX) - Knob_Map(k, k->value, MIDI_MAX);
     uint8_t init_pct = 1.0f * abs(init_diff) / MIDI_MAX * 100;
 
     if (init_diff == 0) return "       @       ";

@@ -62,6 +62,8 @@ void Preset_Load(char *buffer) {
         knobs[Knob_Index(i)].channel = atoi(channel->valuestring);
         knobs[Knob_Index(i)].cc = atoi(cc->valuestring);
         knobs[Knob_Index(i)].init_value = atoi(init_value->valuestring);
+        knobs[Knob_Index(i)].value = atoi(init_value->valuestring);
+        knobs[Knob_Index(i)].lock_value = atoi(init_value->valuestring);
         knobs[Knob_Index(i)].max_values = atoi(max_values->valuestring);
         knobs[Knob_Index(i)].max_range = atoi(max_range->valuestring);
         knobs[Knob_Index(i)].isLocked = atoi(isLocked->valuestring);
