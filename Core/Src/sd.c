@@ -1,15 +1,18 @@
 /*
  * sd.c
  */
+#include <time.h>
 #include "sd.h"
 #include "ssd1306.h"
 
 bool isPresetFilenamesLoaded = false;
 
-void SD_FetchPresetNames() {
+bool SD_FetchPresetNames() {
     DIR root;
     FILINFO root_info;
+
     retSD = f_mount(&SDFatFS, "", 1);
+    if (retSD != FR_OK) return false;
 
     numPresets = 0;
 
@@ -32,6 +35,8 @@ void SD_FetchPresetNames() {
 
     f_closedir(&root);
     retSD = f_mount(NULL, "", 0);
+
+    return true;
 }
 
 bool SD_LoadPreset(char *filename) {
@@ -58,29 +63,23 @@ bool SD_SavePreset() {
     FILINFO root_info;
     char fileNameNoExtRand[MAX_FILENAME_LENGTH - NUM_EXTENSION_CHARS + 1];
     char filenameRand[strlen(fileNameNoExtRand) + NUM_EXTENSION_CHARS + 2];
-    //char presetNameRand[MAX_FILENAME_LENGTH + 1];
-    //char filenameRand[strlen(presetNameRand) + NUM_EXTENSION_CHARS + 2];
 
     retSD = f_mount(&SDFatFS, "", 1);
 
     // Keep randomly generating filenames until we get a unique one
     do {
-        //getRandomPresetName(presetNameRand);
         getRandomFileNameNoExt(fileNameNoExtRand);
-        //snprintf(filenameRand, strlen(presetNameRand) + 2, "%s", presetNameRand);
         snprintf(filenameRand, strlen(fileNameNoExtRand) + 2, "%s", fileNameNoExtRand);
         strcat(filenameRand, ".json");
     } while (f_stat(filenameRand, &root_info) != FR_NO_FILE);
 
-    //char *json_string = Preset_Save(presetNameRand);
-
     char *json_string = Preset_Save(presets[currentPreset].name);
-    numPresets++;
 
     retSD = f_open(&SDFile, filenameRand, FA_WRITE | FA_CREATE_ALWAYS);
     retSD = f_write(&SDFile, json_string, strlen(json_string), &bw);
+
     if (strlen(json_string) != bw || retSD != FR_OK) {
-        //TODO: Error handling }
+        //TODO: Error handling
     }
 
     retSD = f_close(&SDFile);
@@ -106,20 +105,6 @@ void getRandomFileNameNoExt(char *fileNameBuf) {
     strcat(fileNameBuf, "_");
     strcat(fileNameBuf, randBuf);
     fileNameBuf[len_filenameNoExt - 1] = '\0';
-}
-
-void getRandomPresetName(char *presetNameBuf) {
-    char randBuf[NUM_FN_RANDOM_CHARS + 1];
-    char *currPresetName = presets[currentPreset].name;
-
-    getRandomString(randBuf);
-
-    uint16_t len_presetName = strlen(currPresetName) + strlen(randBuf) + 2;
-    snprintf(presetNameBuf, strlen(currPresetName) + 1, "%s", currPresetName);
-    strcat(presetNameBuf, "_");
-    strcat(presetNameBuf, randBuf);
-    presetNameBuf[len_presetName - 1] = '\0';
-
 }
 
 void getRandomString(char *randBuf) {

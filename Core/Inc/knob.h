@@ -30,6 +30,7 @@ typedef struct Knob {
 
 extern Knob knobs[MAX_KNOBS];
 
+void Knob_Init();
 void Knob_Free(Knob *k);
 uint8_t Knob_Map(Knob *k, uint8_t value, uint8_t m);
 

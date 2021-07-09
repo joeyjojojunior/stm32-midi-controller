@@ -156,5 +156,7 @@ char* Preset_Save(char *preset_name) {
     json_string = cJSON_Print(preset_json);
     cJSON_Delete(preset_json);
 
+    numPresets++;
+
     return json_string;
 }

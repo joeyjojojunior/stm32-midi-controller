@@ -7,7 +7,7 @@
 static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
 
 // Menu items to display
-static char menuItems[2][MAX_KNOB_LABEL_CHARS + 1] = { "Load Preset", "Save Preset" };
+static char menuItems[NUM_MENU_ITEMS][MAX_KNOB_LABEL_CHARS + 1] = { "Load", "Save", "Save New", "TX Init" };
 
 // Screen object
 static SSD1306_t SSD1306;
@@ -175,7 +175,7 @@ void ssd1306_WriteKnob(Knob *k) {
 
 void ssd1306_WriteMainMenu() {
     ssd1306_FillAll(Black);
-    for (uint8_t i = 0; i < 3; i++) {
+    for (uint8_t i = 0; i < NUM_MENU_ITEMS; i++) {
         ssd1306_Select(&knobs[i]);
         ssd1306_Fill(Black);
         uint8_t x = (SSD1306_WIDTH - strlen(menuItems[i]) * Font_11x18.FontWidth) / 2;
@@ -305,8 +305,10 @@ void ssd1306_AdjustBrightness(uint8_t brightness) {
 
 // Select a display
 void ssd1306_Select(Knob *k) {
-    i2c_Select(I2C_MUX_MASTER_ADDR, k->row);
-    i2c_Select(I2C_MUX_SLAVE_ADDR, k->col);
+    uint8_t row_mux = (k->col < MAX(NUM_COLS / 2, 1)) ? k->row : k->row + NUM_ROWS;
+    uint8_t col_mux = (k->col < MAX(NUM_COLS / 2, 1)) ? k->col : k->col - NUM_COLS / 2;
+    i2c_Select(I2C_MUX_MASTER_ADDR, row_mux);
+    i2c_Select(I2C_MUX_SLAVE_ADDR, col_mux);
 }
 
 // Select an output in an i2c mux

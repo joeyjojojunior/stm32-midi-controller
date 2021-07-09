@@ -10,9 +10,9 @@ const uint32_t adcChannels[NUM_ADC_CHANNELS] = { ADC_CHANNEL_0, ADC_CHANNEL_1, A
 const uint16_t AMUXPins[4] = { AMUX_S0_Pin, AMUX_S1_Pin, AMUX_S2_Pin, AMUX_S3_Pin };
 
 void ADC_MuxSelect(uint8_t c) {
-    if (c > NUM_ADC_CHANNELS) return;
+    if (c > AMUX_MAX_BYTE) return;
 
-    for (int i = 0; i < NUM_ADC_CHANNELS; i++) {
+    for (int i = 0; i < NUM_AMUX_SELECT_BITS; i++) {
         if (c & (1 << i)) {
             HAL_GPIO_WritePin(GPIO_PORT_AMUX, AMUXPins[i], GPIO_PIN_SET);
         } else {
@@ -21,11 +21,11 @@ void ADC_MuxSelect(uint8_t c) {
     }
 }
 
-void ADC_ReadKnobs() {
+void ADC_ReadKnobs(uint8_t col) {
+    ADC_MuxSelect(col);
+
     for (uint8_t channel = 0; channel < NUM_ADC_CHANNELS; channel++) {
         uint16_t adcBuf[NUM_ADC_SAMPLES];
-
-        ADC_MuxSelect(channel);
 
         // Select channel
         ADC_ChannelConfTypeDef sConfig = { 0 };

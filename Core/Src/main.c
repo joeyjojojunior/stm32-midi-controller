@@ -116,17 +116,17 @@ int main(void)
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / 40);
 
+    Knob_Init();
+
     // Load the first preset (TODO: load the last preset used)
-    SD_FetchPresetNames();
+    isPresetFilenamesLoaded = SD_FetchPresetNames();
     SD_LoadPreset(presets[0].filename);
-
-    //SD_SavePreset();
-
 
     // Init displays
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
         ssd1306_Init(&knobs[i]);
-        ssd1306_WriteKnob(&knobs[i]);
+        if (isPresetFilenamesLoaded)
+            ssd1306_WriteKnob(&knobs[i]);
     }
 
     State *s = &state;
@@ -138,10 +138,10 @@ int main(void)
         MenuStateMachine(s);
 
         for (uint8_t col = 0; col < NUM_COLS; col++) {
-            ADC_ReadKnobs();
+            ADC_ReadKnobs(col);
 
             for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
-                if (*s != NORMAL) {
+                if (*s == LOAD_PRESET) {
                     uint16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
 
                     if (knobDiff > KNOB_SELECT_THRESHOLD) {
@@ -226,8 +226,7 @@ void MenuStateMachine(State *s) {
         Button_Ignore(BUTTON_5);
         break;
     case LOAD_PRESET:
-        SD_FetchPresetNames();
-        isPresetFilenamesLoaded = true;
+        isPresetFilenamesLoaded = SD_FetchPresetNames();
 
         if (!isDisplaysLocked) {
             for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
