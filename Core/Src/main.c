@@ -151,16 +151,17 @@ int main(void)
             ADC_ReadKnobs(col);
 
             for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
+                uint16_t index1D = i + NUM_ROWS * col;
+                //uint16_t presetIndex = Knob_Index(i +  NUM_ROWS * col);
+
                 if (*s == LOAD_PRESET) {
                     uint16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
 
-                    //uint16_t presetIndex = Knob_Index(i +  NUM_ROWS * col);
-                    uint16_t presetIndex = i +  NUM_ROWS * col;
-                    if (knobDiff > KNOB_SELECT_THRESHOLD && presetIndex < numPresets) {
+                    if (knobDiff > KNOB_SELECT_THRESHOLD && index1D < numPresets) {
                         bool loadComplete = false;
 
                         if (isPresetFilenamesLoaded) {
-                            loadComplete = SD_LoadPreset(presets[presetIndex].filename);
+                            loadComplete = SD_LoadPreset(presets[index1D].filename);
                             isPresetFilenamesLoaded = false;
                         }
 
@@ -174,12 +175,16 @@ int main(void)
                 }
 
                 if (*s == NORMAL) {
-                    uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[Knob_Index(i)], adcAveraged[i]);
-                    if (curr_MIDI_val != knobs[Knob_Index(i)].value) {
-                        knobs[Knob_Index(i)].value = curr_MIDI_val;
-                        ssd1306_WriteKnob(&knobs[Knob_Index(i)]);
-                        if (knobs[Knob_Index(i)].value == knobs[Knob_Index(i)].init_value) knobs[Knob_Index(i)].isLocked = false;
-                        //if (!knobs[Knob_Index(i)].isLocked) MIDI_Send(&knobs[Knob_Index(i)], knobs[Knob_Index(i)].value);
+                    uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[Knob_Index(index1D)], adcAveraged[i]);
+                    if (curr_MIDI_val != knobs[Knob_Index(index1D)].value) {
+                        knobs[Knob_Index(index1D)].value = curr_MIDI_val;
+                        ssd1306_WriteKnob(&knobs[Knob_Index(index1D)]);
+
+                        if (knobs[Knob_Index(index1D)].value == knobs[Knob_Index(index1D)].init_value)
+                            knobs[Knob_Index(index1D)].isLocked = false;
+
+                        if (!knobs[Knob_Index(index1D)].isLocked)
+                            MIDI_Send(&knobs[Knob_Index(index1D)], knobs[Knob_Index(index1D)].value);
                     }
                 }
 
