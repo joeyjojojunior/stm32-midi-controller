@@ -22,7 +22,6 @@
 
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 
-#define NUM_MENU_ITEMS 4
 
 // I2C Display address
 #ifndef SSD1306_I2C_ADDR

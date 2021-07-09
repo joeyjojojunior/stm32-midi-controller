@@ -94,7 +94,7 @@ void ssd1306_Fill(SSD1306_COLOR color) {
 
 void ssd1306_FillAll(SSD1306_COLOR color) {
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
-        ssd1306_Select(&knobs[i]);
+        ssd1306_Select(&knobs[Knob_Index(i)]);
         ssd1306_Fill(color);
         ssd1306_UpdateScreen();
     }
@@ -112,7 +112,7 @@ void ssd1306_UpdateScreen() {
 
 void ssd1306_WriteAllKnobs() {
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
-        ssd1306_WriteKnob(&knobs[i]);
+        ssd1306_WriteKnob(&knobs[Knob_Index(i)]);
     }
 }
 
@@ -176,7 +176,7 @@ void ssd1306_WriteKnob(Knob *k) {
 void ssd1306_WriteMainMenu() {
     ssd1306_FillAll(Black);
     for (uint8_t i = 0; i < NUM_MENU_ITEMS; i++) {
-        ssd1306_Select(&knobs[i]);
+        ssd1306_Select(&knobs[Knob_Index(i)]);
         ssd1306_Fill(Black);
         uint8_t x = (SSD1306_WIDTH - strlen(menuItems[i]) * Font_11x18.FontWidth) / 2;
         uint8_t y = SSD1306_HEIGHT / 2 - Font_11x18.FontHeight / 2;
@@ -188,7 +188,7 @@ void ssd1306_WriteMainMenu() {
 
 void ssd1306_WritePresets() {
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
-        ssd1306_Select(&knobs[i]);
+        ssd1306_Select(&knobs[Knob_Index(i)]);
         ssd1306_Fill(Black);
         uint8_t x = (SSD1306_WIDTH - strlen(presets[i].name) * Font_11x18.FontWidth) / 2;
         uint8_t y = SSD1306_HEIGHT / 2 - Font_11x18.FontHeight / 2;

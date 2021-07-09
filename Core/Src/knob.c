@@ -3,23 +3,27 @@
  *
  */
 #include "knob.h"
+#include "main.h"
 
-Knob knobs[MAX_KNOBS];
+Knob knobs[NUM_KNOBS * NUM_PAGES];
+uint8_t knobPage = 0;
 
 void Knob_Init() {
     // TODO: Change when ADC muxes set up as they should be
-    knobs[0].row = 0;
-    knobs[0].col = 0;
-    knobs[1].row = 0;
-    knobs[1].col = 1;
-    knobs[2].row = 1;
-    knobs[2].col = 0;
-    knobs[3].row = 1;
-    knobs[3].col = 1;
+    for (uint8_t p = 0; p < NUM_PAGES; p++) {
+        for (uint8_t i = 0; i < NUM_MENU_ITEMS; i++) {
+            knobs[i + p * NUM_KNOBS].row = i;
+            knobs[i + p * NUM_KNOBS].col = 0;
+        }
+    }
 }
 
 void Knob_Free(Knob *k) {
     free(k->sub_labels);
+}
+
+uint16_t Knob_Index(uint8_t i) {
+    return i + knobPage * NUM_KNOBS;
 }
 
 // Maps values from (0, max_values-1) to (0, m)

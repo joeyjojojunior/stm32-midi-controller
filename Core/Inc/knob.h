@@ -9,7 +9,6 @@
 
 #define NUM_KNOBS 4
 #define NUM_PAGES 5
-#define MAX_KNOBS NUM_KNOBS * NUM_PAGES
 #define MAX_KNOB_LABEL_CHARS 14
 #define MIDI_MAX 127
 
@@ -28,10 +27,12 @@ typedef struct Knob {
     uint8_t isLocked;
 } Knob;
 
-extern Knob knobs[MAX_KNOBS];
+extern Knob knobs[NUM_KNOBS * NUM_PAGES];
+extern uint8_t knobPage;
 
 void Knob_Init();
 void Knob_Free(Knob *k);
+uint16_t Knob_Index(uint8_t i);
 uint8_t Knob_Map(Knob *k, uint8_t value, uint8_t m);
 
 #endif /* INC_KNOB_H_ */

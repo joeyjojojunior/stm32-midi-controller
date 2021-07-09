@@ -57,7 +57,6 @@ SD_HandleTypeDef hsd;
 
 /* USER CODE BEGIN PV */
 State state = NORMAL;
-uint8_t knobPage = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -124,17 +123,28 @@ int main(void)
 
     // Init displays
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
-        ssd1306_Init(&knobs[i]);
+        ssd1306_Init(&knobs[Knob_Index(i)]);
         if (isPresetFilenamesLoaded)
-            ssd1306_WriteKnob(&knobs[i]);
+            ssd1306_WriteKnob(&knobs[Knob_Index(i)]);
     }
 
     State *s = &state;
+    isPresetFilenamesLoaded = false;
 
-    //*s = LOAD_PRESET;
-    //ssd1306_WritePresets();
+
+    uint8_t temp = 0;
 
     while (1) {
+        /*
+        if (temp == 0) {
+            btnDown[BUTTON_5] = true;
+        } else if (temp == 1) {
+            *s = MENU;
+        } else if (temp == 2) {
+            btnDown[BUTTON_1] = true;
+        }
+        */
+
         MenuStateMachine(s);
 
         for (uint8_t col = 0; col < NUM_COLS; col++) {
@@ -144,11 +154,13 @@ int main(void)
                 if (*s == LOAD_PRESET) {
                     uint16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
 
-                    if (knobDiff > KNOB_SELECT_THRESHOLD) {
+                    //uint16_t presetIndex = Knob_Index(i +  NUM_ROWS * col);
+                    uint16_t presetIndex = i +  NUM_ROWS * col;
+                    if (knobDiff > KNOB_SELECT_THRESHOLD && presetIndex < numPresets) {
                         bool loadComplete = false;
 
                         if (isPresetFilenamesLoaded) {
-                            loadComplete = SD_LoadPreset(presets[i].filename);
+                            loadComplete = SD_LoadPreset(presets[presetIndex].filename);
                             isPresetFilenamesLoaded = false;
                         }
 
@@ -161,20 +173,24 @@ int main(void)
                     continue;
                 }
 
-                uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[i], adcAveraged[i]);
-                if (curr_MIDI_val != knobs[i].value) {
-                    knobs[i].value = curr_MIDI_val;
-                    ssd1306_WriteKnob(&knobs[i]);
-                    if (knobs[i].value == knobs[i].init_value) knobs[i].isLocked = false;
-                    if (!knobs[i].isLocked) MIDI_Send(&knobs[i], knobs[i].value);
+                if (*s == NORMAL) {
+                    uint8_t curr_MIDI_val = MIDI_Scale_And_Filter(&knobs[Knob_Index(i)], adcAveraged[i]);
+                    if (curr_MIDI_val != knobs[Knob_Index(i)].value) {
+                        knobs[Knob_Index(i)].value = curr_MIDI_val;
+                        ssd1306_WriteKnob(&knobs[Knob_Index(i)]);
+                        if (knobs[Knob_Index(i)].value == knobs[Knob_Index(i)].init_value) knobs[Knob_Index(i)].isLocked = false;
+                        //if (!knobs[Knob_Index(i)].isLocked) MIDI_Send(&knobs[Knob_Index(i)], knobs[Knob_Index(i)].value);
+                    }
                 }
 
             }
         }
+
+        temp++;
     }
 
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {
-        Knob_Free(&knobs[i]);
+        Knob_Free(&knobs[Knob_Index(i)]);
     }
 }
 
@@ -193,6 +209,7 @@ void MenuStateMachine(State *s) {
             ssd1306_WriteAllKnobs();
             isDisplaysLocked = true;
         }
+
 
         // Handle page switch
         for (uint8_t i = 0; i < NUM_BUTTONS - 1; i++) {

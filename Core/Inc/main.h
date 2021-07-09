@@ -96,6 +96,7 @@ void Error_Handler(void);
 #define AMUX_S3_Pin GPIO_PIN_9
 #define AMUX_S3_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+#define NUM_MENU_ITEMS 4
 #define KNOB_SELECT_THRESHOLD 25
 #define NUM_ROWS 4
 #define NUM_COLS 1
