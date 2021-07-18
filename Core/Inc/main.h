@@ -97,7 +97,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 #define NUM_MENU_ITEMS 4
 #define NUM_ROWS 4
-#define NUM_COLS 1
+#define NUM_COLS 16
 #define KNOB_SELECT_THRESHOLD 25
 /* USER CODE END Private defines */
 

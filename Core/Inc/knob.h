@@ -7,8 +7,8 @@
 #ifndef INC_KNOB_H_
 #define INC_KNOB_H_
 
-#define NUM_KNOBS 4
-#define NUM_PAGES 5
+#define NUM_KNOBS 64
+#define NUM_PAGES 2
 #define MAX_KNOB_LABEL_CHARS 14
 #define MIDI_MAX 127
 

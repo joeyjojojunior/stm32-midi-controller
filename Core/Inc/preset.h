@@ -10,13 +10,15 @@
 #include "cJSON.h"
 #include "knob.h"
 #include "ff.h"
+#include "tiny-json.h"
 
-#define MAX_PRESETS NUM_KNOBS * NUM_PAGES
+#define MAX_PRESETS 1
 #define MAX_FILENAME_LENGTH _MAX_LFN/4
 
 typedef struct Preset {
     char filename[MAX_FILENAME_LENGTH + 1];
     char name[MAX_KNOB_LABEL_CHARS + 1];
+    char sub_label[MAX_KNOB_LABEL_CHARS + 1];
     uint16_t index;
 } Preset;
 

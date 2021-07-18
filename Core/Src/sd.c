@@ -26,10 +26,10 @@ bool SD_FetchPresetNames() {
 
         retSD = f_read(&SDFile, presetBuffer, sizeof(presetBuffer) - 1, &bytesRead);
         presetBuffer[bytesRead] = '\0';
+        retSD = f_close(&SDFile);
 
         Preset_GetName(root_info.fname, presetBuffer, nameBuffer);
 
-        retSD = f_close(&SDFile);
         retSD = f_findnext(&root, &root_info);
     }
 
@@ -47,11 +47,10 @@ bool SD_LoadPreset(char *filename) {
     unsigned int bytesRead;
     retSD = f_read(&SDFile, presetBuffer, sizeof(presetBuffer) - 1, &bytesRead);
     presetBuffer[bytesRead] = '\0';
-
-    Preset_Load(presetBuffer);
-
     retSD = f_close(&SDFile);
     retSD = f_mount(NULL, "", 0);
+
+    Preset_Load(presetBuffer);
 
     return true;
 }
