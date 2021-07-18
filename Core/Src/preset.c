@@ -106,39 +106,18 @@ void Preset_Load(char *buffer) {
 
             if (knobPage >= NUM_PAGES) break;
 
-            char const*  label = json_getPropertyValue(knob, "label");
-            if (label) printf("label: %s\n", label);
-
-            char const* channel = json_getPropertyValue(knob, "channel");
-            if (channel) printf("channel: %s\n", channel);
-
-            char const* cc = json_getPropertyValue(knob, "cc");
-            if (cc) printf("cc: %s\n", cc);
-
-            char const* init_value = json_getPropertyValue(knob, "init_value");
-            if (init_value) printf("init_value: %s\n", init_value);
-
-            char const* max_values = json_getPropertyValue(knob, "max_values");
-            if (max_values) printf("max_values: %s\n", max_values);
-
-            char const* max_range = json_getPropertyValue(knob, "max_range");
-            if (max_range) printf("max_range: %s\n", max_range);
-
-            char const* is_locked = json_getPropertyValue(knob, "isLocked");
-            if (is_locked) printf("isLocked: %s\n", is_locked);
-
-            snprintf(knobs[Knob_Index(i)].label, sizeof(knobs[Knob_Index(i)].label) / sizeof(knobs[Knob_Index(i)].label[0]), "%s", label);
-            knobs[Knob_Index(i)].channel = atoi(channel);
-            knobs[Knob_Index(i)].cc = atoi(cc);
-            knobs[Knob_Index(i)].init_value = atoi(init_value);
-            knobs[Knob_Index(i)].value = atoi(init_value);
-            knobs[Knob_Index(i)].lock_value = atoi(init_value);
-            knobs[Knob_Index(i)].max_values = atoi(max_values);
-            knobs[Knob_Index(i)].max_range = atoi(max_range);
-            knobs[Knob_Index(i)].isLocked = atoi(is_locked);
+            snprintf(knobs[Knob_Index(i)].label, sizeof(knobs[Knob_Index(i)].label) / sizeof(knobs[Knob_Index(i)].label[0]), "%s", json_getPropertyValue(knob, "n"));
+            knobs[Knob_Index(i)].channel = atoi(json_getPropertyValue(knob, "ch"));
+            knobs[Knob_Index(i)].cc = atoi(json_getPropertyValue(knob, "cc"));
+            knobs[Knob_Index(i)].init_value = atoi(json_getPropertyValue(knob, "i"));
+            knobs[Knob_Index(i)].value = atoi(json_getPropertyValue(knob, "i"));
+            knobs[Knob_Index(i)].lock_value = atoi(json_getPropertyValue(knob, "i"));
+            knobs[Knob_Index(i)].max_values = atoi(json_getPropertyValue(knob, "v"));
+            knobs[Knob_Index(i)].max_range = atoi(json_getPropertyValue(knob, "r"));
+            knobs[Knob_Index(i)].isLocked = atoi(json_getPropertyValue(knob, "l"));
 
             // Fetch sublabels
-            json_t const* sub_labels = json_getProperty(knob, "sub_labels");
+            json_t const* sub_labels = json_getProperty(knob, "s");
             if (!sub_labels || JSON_ARRAY != json_getType(sub_labels)) {
                 puts("Error, current knob's sub_labels property is not found.");
             }

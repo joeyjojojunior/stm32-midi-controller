@@ -230,6 +230,7 @@ int main(void)
 
                 if (*s == LOAD_PRESET) {
                     if (col > 0) continue;
+
                     uint16_t knobDiff = abs(adcAveraged[i] - adcAveragedPrev[i]);
 
                     if (knobDiff > KNOB_SELECT_THRESHOLD && index1D < numPresets) {
@@ -291,7 +292,7 @@ void MenuStateMachine(State *s) {
         }
 
         // Handle page switch
-        for (uint8_t i = 0; i < NUM_BUTTONS - 1; i++) {
+        for (uint8_t i = 0; i < BUTTON_3 ; i++) {
             if (Button_IsDown(i) && i != knobPage) {
                 Knob_LockAll();
                 LED_Off(knobPage);
@@ -326,6 +327,8 @@ void MenuStateMachine(State *s) {
         isPresetFilenamesLoaded = SD_FetchPresetNames();
 
         if (!isDisplaysLocked) {
+            ADC_ReadKnobs(0);
+
             for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
                 adcAveragedPrev[i] = adcAveraged[i];
             }
@@ -481,7 +484,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
+  hi2c1.Init.ClockSpeed = 800000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;

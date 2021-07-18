@@ -108,6 +108,7 @@ void MX_USB_Send_Midi(uint8_t channel, uint8_t cc, uint8_t value) {
 /* USER CODE END 1 */
 
 
+
 /**
   * @}
   */

@@ -12,8 +12,8 @@
 #include "ff.h"
 #include "tiny-json.h"
 
-#define MAX_PRESETS 1
-#define MAX_FILENAME_LENGTH _MAX_LFN/4
+#define MAX_PRESETS NUM_KNOBS * NUM_PAGES
+#define MAX_FILENAME_LENGTH _MAX_LFN/8
 
 typedef struct Preset {
     char filename[MAX_FILENAME_LENGTH + 1];
