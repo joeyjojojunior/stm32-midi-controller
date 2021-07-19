@@ -52,19 +52,13 @@ void Preset_Load(char *buffer) {
         knobs[Knob_Index(i)].max_range = atoi(tokens[5]);
         knobs[Knob_Index(i)].isLocked = atoi(tokens[6]);
 
-        // Count non-empty sub labels and allocate space for them
-        knobs[Knob_Index(i)].num_sl = 0;
-        for (uint8_t j = 7; j < MAX_KNOB_TOKENS; j++) {
-           if (tokens[j][0] == '\0') break;
-           knobs[Knob_Index(i)].num_sl++;
-        }
+        knobs[Knob_Index(i)].num_sl = atoi(tokens[7]);
         Knob_Free(&knobs[Knob_Index(i)]);
         knobs[Knob_Index(i)].sub_labels = malloc(sizeof(*knobs[Knob_Index(i)].sub_labels) * knobs[Knob_Index(i)].num_sl);
 
-
         // Add sub labels
         uint8_t label_index = 0;
-        for (uint8_t j = 7; j < knobs[Knob_Index(i)].num_sl + 7; j++) {
+        for (uint8_t j = 8; j < knobs[Knob_Index(i)].num_sl + 8; j++) {
             if (tokens[j][0] == '\0') break;
             snprintf(knobs[Knob_Index(i)].sub_labels[label_index], sizeof(knobs[Knob_Index(i)].sub_labels[0]) / sizeof(knobs[Knob_Index(i)].sub_labels[0][0]), "%s", tokens[j]);
             label_index++;
