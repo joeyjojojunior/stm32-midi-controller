@@ -225,8 +225,6 @@ int main(void)
 
             for (uint8_t i = 0; i < NUM_ADC_CHANNELS; i++) {
                 uint16_t index1D = col + NUM_COLS * i;
-                //uint16_t index1D = i + NUM_ROWS * col;
-                //uint16_t presetIndex = Knob_Index(i +  NUM_ROWS * col);
 
                 if (*s == LOAD_PRESET) {
                     if (col > 0) continue;
@@ -484,7 +482,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 800000;
+  hi2c1.Init.ClockSpeed = 400000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;

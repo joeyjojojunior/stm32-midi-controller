@@ -219,10 +219,10 @@ void ssd1306_WriteKnob(Knob *k) {
     // Draw main label
     uint8_t y_remaining_div = (k->num_sl > 0) ? 3 : 2;
     len_label = strlen(k->label);
-    x = (SSD1306_WIDTH - len_label * Font_11x18.FontWidth) / 2;
-    y = (float) y_remaining / y_remaining_div + (Font_11x18.FontHeight / 4) - 2;
+    x = (SSD1306_WIDTH - len_label * Font_8x14.FontWidth) / 2;
+    y = (float) y_remaining / y_remaining_div + (Font_8x14.FontHeight / 4) - 2;
     ssd1306_SetCursor(x, y);
-    ssd1306_WriteString(k->label, Font_11x18, White);
+    ssd1306_WriteString(k->label, Font_8x14, White);
 
     // If the max number of values is restricted, we want to use
     // sub labels for each choice (e.g. osc. wave selection)
@@ -231,10 +231,10 @@ void ssd1306_WriteKnob(Knob *k) {
                            (k->isLocked) ? k->lock_value : k->value;
         //uint8_t sl_index = (k->max_values < MIDI_MAX + 1) ? k->value : 0;
         len_label = strlen(k->sub_labels[sl_index]);
-        x = (SSD1306_WIDTH - len_label * Font_11x18.FontWidth) / 2;
-        y = SSD1306_HEIGHT - Font_11x18.FontHeight - 5;
+        x = (SSD1306_WIDTH - len_label * Font_8x14.FontWidth) / 2;
+        y = SSD1306_HEIGHT - Font_8x14.FontHeight - 5;
         ssd1306_SetCursor(x, y);
-        ssd1306_WriteString(k->sub_labels[sl_index], Font_11x18, White);
+        ssd1306_WriteString(k->sub_labels[sl_index], Font_8x14, White);
     }
 
     ssd1306_UpdateScreen();
@@ -247,10 +247,10 @@ void ssd1306_WriteMainMenu() {
         ssd1306_Select(&knobs[Knob_Index(ki)]);
         ssd1306_Fill(Black);
         ssd1306_DrawBorder(White);
-        uint8_t x = (SSD1306_WIDTH - strlen(menuItems[i]) * Font_11x18.FontWidth) / 2;
-        uint8_t y = SSD1306_HEIGHT / 2 - Font_11x18.FontHeight / 2;
+        uint8_t x = (SSD1306_WIDTH - strlen(menuItems[i]) * Font_8x14.FontWidth) / 2;
+        uint8_t y = SSD1306_HEIGHT / 2 - Font_8x14.FontHeight / 2;
         ssd1306_SetCursor(x, y);
-        ssd1306_WriteString(menuItems[i], Font_11x18, White);
+        ssd1306_WriteString(menuItems[i], Font_8x14, White);
 
         ssd1306_UpdateScreen();
     }
@@ -271,19 +271,19 @@ void ssd1306_WritePresets() {
         uint8_t len_sl = strlen(presets[i].sub_label);
 
         // Draw preset name
-        uint8_t x = (SSD1306_WIDTH - len_name * Font_11x18.FontWidth) / 2;
+        uint8_t x = (SSD1306_WIDTH - len_name * Font_8x14.FontWidth) / 2;
         uint8_t y_div = (len_sl == 0) ? 2 : 3;
-        uint8_t y = SSD1306_HEIGHT / y_div - Font_11x18.FontHeight / 2;
+        uint8_t y = SSD1306_HEIGHT / y_div - Font_8x14.FontHeight / 2;
         ssd1306_SetCursor(x, y);
-        ssd1306_WriteString(presets[i].name, Font_11x18, White);
+        ssd1306_WriteString(presets[i].name, Font_8x14, White);
 
         // Draw preset label (if exists)
         if (len_sl > 0) {
-            x = (SSD1306_WIDTH - len_sl * Font_11x18.FontWidth) / 2;
-            //y = 2 * SSD1306_HEIGHT / y_div - Font_11x18.FontHeight / 2;
-            y = SSD1306_HEIGHT - Font_11x18.FontHeight - 1;
+            x = (SSD1306_WIDTH - len_sl * Font_8x14.FontWidth) / 2;
+            //y = 2 * SSD1306_HEIGHT / y_div - Font_8x14.FontHeight / 2;
+            y = SSD1306_HEIGHT - Font_8x14.FontHeight - 1;
             ssd1306_SetCursor(x, y);
-            ssd1306_WriteString(presets[i].sub_label, Font_11x18, White);
+            ssd1306_WriteString(presets[i].sub_label, Font_8x14, White);
         }
 
         ssd1306_UpdateScreen();

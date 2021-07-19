@@ -16,7 +16,7 @@ bool SD_FetchPresetNames() {
 
     numPresets = 0;
 
-    retSD = f_findfirst(&root, &root_info, "", "*.json");
+    retSD = f_findfirst(&root, &root_info, "", "*.txt");
     while (retSD == FR_OK && root_info.fname[0]) {
         retSD = f_open(&SDFile, root_info.fname, FA_READ);
 
@@ -69,7 +69,7 @@ bool SD_SavePreset() {
     do {
         getRandomFileNameNoExt(fileNameNoExtRand);
         snprintf(filenameRand, strlen(fileNameNoExtRand) + 2, "%s", fileNameNoExtRand);
-        strcat(filenameRand, ".json");
+        strcat(filenameRand, ".txt");
     } while (f_stat(filenameRand, &root_info) != FR_NO_FILE);
 
     char *json_string = Preset_Save(presets[currentPreset].name);
