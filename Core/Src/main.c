@@ -139,85 +139,8 @@ int main(void)
     State *s = &state;
     isPresetFilenamesLoaded = false;
 
-    /*
-    while (true) {
-
-        //ssd1306_Init2();
-        i2c_Select(I2C_MUX_MASTER_ADDR, 0);
-        i2c_Select(I2C_MUX_SLAVE_ADDR, 1);
-        ssd1306_WriteString("test1", Font_11x18, White);
-        ssd1306_UpdateScreen();
-
-       // ssd1306_Init2();
-        i2c_Select(I2C_MUX_MASTER_ADDR, 1);
-        i2c_Select(I2C_MUX_SLAVE_ADDR, 1);
-        ssd1306_WriteString("test2", Font_11x18, White);
-        ssd1306_UpdateScreen();
-
-        //ssd1306_Init2();
-        i2c_Select(I2C_MUX_MASTER_ADDR, 2);
-        i2c_Select(I2C_MUX_SLAVE_ADDR, 1);
-        ssd1306_WriteString("test3", Font_11x18, White);
-        ssd1306_UpdateScreen();
-
-        //ssd1306_Init2();
-        i2c_Select(I2C_MUX_MASTER_ADDR, 3);
-        i2c_Select(I2C_MUX_SLAVE_ADDR, 1);
-        ssd1306_WriteString("test3", Font_11x18, White);
-        ssd1306_UpdateScreen();
-
-    }
-    */
-    /*
-     bool firstRun = true;
-
-
-     while (true) {
-     if (firstRun) {
-     ssd1306_Fill(Black);
-     ssd1306_SetCursor(2,2);
-     ssd1306_WriteString("~", Font_1, White);
-     ssd1306_WriteString("~", Font_2, White);
-     ssd1306_WriteString("~", Font_3, White);
-     ssd1306_WriteString("~", Font_4, White);
-     ssd1306_WriteString("~", Font_5, White);
-     ssd1306_WriteString("~", Font_6, White);
-
-     ssd1306_SetCursor(2,34);
-     ssd1306_WriteString("E ", Font_11x18, White);
-     ssd1306_WriteString("E ", Font_2, White);
-     ssd1306_WriteString("E ", Font_3, White);
-     ssd1306_WriteString("E ", Font_4, White);
-     ssd1306_WriteString("E ", Font_5, White);
-     ssd1306_WriteString("E", Font_6, White);
-
-     ssd1306_UpdateScreen();
-
-     firstRun = false;
-
-     }
-     }
-     */
-
-    uint8_t temp = 0;
 
     while (1) {
-
-        /*
-         if (temp == 1) {
-         btnDown[BUTTON_2] = true;
-         }
-         else if (temp == 2) {
-         btnDown[BUTTON_1] = true;
-         }
-         */
-
-        /*
-         else if (temp == 2) {
-         btnDown[BUTTON_1] = true;
-         }
-         */
-
         MenuStateMachine(s);
 
         for (uint8_t col = 0; col < 4; col++) {
@@ -261,11 +184,8 @@ int main(void)
                             //MIDI_Send(&knobs[Knob_Index(index1D)], knobs[Knob_Index(index1D)].value);
                     }
                 }
-
             }
         }
-
-        temp++;
     }
 
     for (uint8_t i = 0; i < NUM_KNOBS; i++) {

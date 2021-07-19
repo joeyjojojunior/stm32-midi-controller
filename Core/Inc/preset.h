@@ -7,13 +7,11 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "cJSON.h"
 #include "knob.h"
 #include "ff.h"
-#include "tiny-json.h"
 
-#define MAX_PRESETS 1
-#define MAX_FILENAME_LENGTH _MAX_LFN/8
+#define MAX_PRESETS NUM_KNOBS * NUM_PAGES
+#define MAX_FILENAME_LENGTH _MAX_LFN/6
 #define MAX_KNOB_TOKENS 135
 
 typedef struct Preset {
@@ -29,7 +27,7 @@ extern Preset presets[MAX_PRESETS];
 
 void Preset_GetName(char *filename, char *file_buffer, char *name_buffer);
 void Preset_Load(char* buffer);
-char *Preset_Save(char* preset_name);
+//char *Preset_Save(char* preset_name);
 void tokenizer(char inputStr[], char delim, char buf[][MAX_KNOB_LABEL_CHARS + 1]);
 
 #endif /* INC_PRESET_H_ */

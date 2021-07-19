@@ -18,15 +18,6 @@ void Knob_Init() {
             }
         }
     }
-    // TODO: Change when ADC muxes set up as they should be
-    /*
-    for (uint8_t p = 0; p < NUM_PAGES; p++) {
-        for (uint8_t i = 0; i < NUM_MENU_ITEMS; i++) {
-            knobs[i + p * NUM_KNOBS].row = i;
-            knobs[i + p * NUM_KNOBS].col = 0;
-        }
-    }
-    */
 }
 
 // Converts a knob index from 0 to NUM_KNOBS to select a knob page

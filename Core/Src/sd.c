@@ -56,6 +56,7 @@ bool SD_LoadPreset(char *filename) {
 }
 
 bool SD_SavePreset() {
+    /*
     if (numPresets >= MAX_PRESETS) return false;
 
     UINT bw;
@@ -85,6 +86,7 @@ bool SD_SavePreset() {
     retSD = f_mount(NULL, "", 0);
 
     free(json_string);
+    */
 
     return true;
 }
